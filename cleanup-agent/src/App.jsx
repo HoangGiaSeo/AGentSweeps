@@ -102,7 +102,11 @@ export default function App() {
     const external = AI_PROVIDERS.find((p) => apiKeys?.[p.id]?.enabled && apiKeys?.[p.id]?.key);
     if (external) {
       setChatProvider(external.id);
-      setChatExternalModel((prev) => prev || external.defaultModel || "");
+      // Reset model to provider's default if current model doesn't belong to this provider
+      setChatExternalModel((prev) => {
+        const validModels = AI_PROVIDERS.find((p) => p.id === external.id)?.models || [];
+        return validModels.includes(prev) ? prev : (external.defaultModel || "");
+      });
     } else {
       setChatProvider("ollama");
       ensureOllamaRunning().catch(() => {});
@@ -486,7 +490,8 @@ export default function App() {
         {tab === "chat" && (
           <ChatTab
             chatMessages={chatMessages} chatInput={chatInput} setChatInput={setChatInput}
-            chatLoading={chatLoading} chatModel={chatModel} setChatModel={setChatModel}
+            chatLoading={chatLoading}
+            chatModel={chatModel} setChatModel={setChatModel}
             chatProvider={chatProvider} setChatProvider={setChatProvider}
             chatExternalModel={chatExternalModel} setChatExternalModel={setChatExternalModel}
             chatReady={chatReady} ollamaStatus={ollamaStatus} apiKeys={apiKeys}

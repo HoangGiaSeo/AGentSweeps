@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as path from "path";
 import * as child_process from "child_process";
 import { DiskOverview, formatSize } from "./diskCommands";
 
@@ -16,7 +17,7 @@ export function getFolderSize(dirPath: string): number {
         continue;
       }
       for (const entry of entries) {
-        const full = `${current}\\${entry.name}`;
+        const full = path.join(current, entry.name);
         if (entry.isDirectory()) {
           stack.push(full);
         } else if (entry.isFile()) {

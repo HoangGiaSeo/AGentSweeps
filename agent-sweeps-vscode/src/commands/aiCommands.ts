@@ -56,18 +56,33 @@ export async function chatGemini(
     parts: [{ text: m.content }],
   }));
 
-  const res = await axios.post(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents,
-    },
-    { timeout: 60000 }
-  );
+  try {
+    const res = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents,
+      },
+      { timeout: 60000 }
+    );
 
-  const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error("Không nhận được phản hồi từ Gemini");
-  return text;
+    const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error("Không nhận được phản hồi từ Gemini");
+    return text;
+  } catch (err: any) {
+    // Handle quota / rate-limit errors with a friendly message
+    if (err.response?.status === 429) {
+      const errMsg: string = err.response?.data?.error?.message || "";
+      const retryMatch = errMsg.match(/retry in (\d+(?:\.\d+)?)s/i);
+      const retryHint = retryMatch
+        ? ` Vui lòng chờ ${Math.ceil(parseFloat(retryMatch[1]))} giây rồi thử lại.`
+        : " Vui lòng thử lại sau vài phút.";
+      throw new Error(
+        `⚠️ Gemini đã vượt hạn ngạch miễn phí.${retryHint} Gợi ý: chuyển sang model gemini-1.5-flash hoặc dùng Ollama (hoàn toàn miễn phí).`
+      );
+    }
+    throw err;
+  }
 }
 
 export async function chatAnthropic(

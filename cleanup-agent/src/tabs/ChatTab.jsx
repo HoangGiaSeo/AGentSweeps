@@ -7,6 +7,9 @@ export default function ChatTab({
   setChatInput,
   chatLoading,
   chatProvider,
+  setChatProvider,
+  chatModel,
+  setChatModel,
   chatExternalModel,
   setChatExternalModel,
   chatReady,
@@ -36,7 +39,39 @@ export default function ChatTab({
           </span>
         </div>
         <div className="chat-header-actions">
-          {chatProvider !== "ollama" && (
+          {/* Provider switcher — chỉ hiện provider đã có API key hoặc Ollama */}
+          <select
+            className="chat-provider-select"
+            value={chatProvider}
+            onChange={(e) => {
+              const newProvider = e.target.value;
+              setChatProvider(newProvider);
+              if (newProvider !== "ollama") {
+                const p = AI_PROVIDERS.find((ap) => ap.id === newProvider);
+                setChatExternalModel(p?.defaultModel || "");
+              }
+            }}
+          >
+            <option value="ollama">🦙 Ollama (Local)</option>
+            {AI_PROVIDERS.filter((p) => apiKeys[p.id]?.key && apiKeys[p.id]?.enabled).map((p) => (
+              <option key={p.id} value={p.id}>{p.icon} {p.name}</option>
+            ))}
+          </select>
+
+          {/* Model selector */}
+          {chatProvider === "ollama" ? (
+            ollamaStatus?.models?.length > 1 && (
+              <select
+                className="chat-model-select"
+                value={chatModel}
+                onChange={(e) => setChatModel(e.target.value)}
+              >
+                {ollamaStatus.models.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            )
+          ) : (
             <select
               className="chat-model-select"
               value={chatExternalModel}
@@ -47,6 +82,7 @@ export default function ChatTab({
               ))}
             </select>
           )}
+
           {chatMessages.length > 0 && (
             <button className="btn btn-tiny" onClick={clearChat}>
               🗑️ Xóa hội thoại

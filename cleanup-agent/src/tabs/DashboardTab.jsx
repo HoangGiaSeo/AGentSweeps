@@ -55,7 +55,7 @@ export default function DashboardTab({
               <ol className="help-steps">
                 <li>Tải Ollama tại <strong>ollama.com</strong></li>
                 <li>Mở Terminal, gõ: <code>ollama serve</code></li>
-                <li>Tải model: <code>ollama pull llama3</code></li>
+                <li>Tải model: <code>ollama pull gemma3:4b</code></li>
                 <li>Nhấn "Refresh" bên dưới</li>
               </ol>
             </div>

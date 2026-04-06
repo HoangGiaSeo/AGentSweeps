@@ -115,12 +115,15 @@ pub async fn test_api_key(provider: String, key: String) -> Result<String, Strin
                 .await
                 .map_err(|e| format!("Lỗi kết nối Gemini: {}", e))?;
 
+            let status_code = res.status().as_u16();
             if res.status().is_success() {
                 Ok("✅ Kết nối Google Gemini thành công!".into())
-            } else if res.status().as_u16() == 400 || res.status().as_u16() == 403 {
-                Err("❌ API Key không hợp lệ".into())
+            } else if status_code == 429 {
+                Err("⚠️ API Key hợp lệ nhưng đã vượt hạn ngạch miễn phí. Đại ca hãy chuyển sang model gemini-1.5-flash hoặc bật thanh toán tại https://ai.dev/rate-limit.".into())
+            } else if status_code == 400 || status_code == 403 {
+                Err("❌ API Key Gemini không hợp lệ. Kiểm tra lại tại aistudio.google.com.".into())
             } else {
-                Err(format!("❌ Lỗi HTTP {}", res.status()))
+                Err(format!("❌ Lỗi HTTP {} từ Gemini", status_code))
             }
         }
         "anthropic" => {

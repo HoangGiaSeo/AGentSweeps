@@ -261,7 +261,7 @@ export default function CleanupTab({
             <div className="estimate-summary">
               <span className="estimate-label">Ước tính giải phóng:</span>
               <span className="estimate-total">
-                {formatSize(Object.values(sizeEstimates).reduce((s, e) => s + e.size_bytes, 0))}
+                {formatSize(Object.values(sizeEstimates).reduce((s, e) => s + (e?.size_bytes ?? 0), 0))}
               </span>
             </div>
           )}
