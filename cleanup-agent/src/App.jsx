@@ -4,28 +4,20 @@ import {
   scanDisk,
   runCleanup,
   smartCleanup,
-  chatAI,
-  chatExternal,
   checkOllama,
   getCleanupLog,
   clearCleanupLog,
-  getApiKeys,
-  saveApiKey,
-  removeApiKey,
-  testApiKey,
-  getSchedule,
-  saveSchedule,
-  checkAndRunSchedule,
   zipBackup,
   estimateCleanupSize,
   checkFirstRun,
-  ensureOllamaRunning,
-  deepScanDrive,
-  deepCleanItems,
   analyzeDrive,
 } from "./api";
-import { TABS, MANUAL_ACTIONS, AI_PROVIDERS, formatSize } from "./constants";
+import { TABS, MANUAL_ACTIONS, formatSize } from "./constants";
 import { useToast } from "./hooks/useToast";
+import { useApiKeys } from "./hooks/useApiKeys";
+import { useDeepScan } from "./hooks/useDeepScan";
+import { useChat } from "./hooks/useChat";
+import { useSchedule } from "./hooks/useSchedule";
 import DashboardTab from "./tabs/DashboardTab";
 import CleanupTab from "./tabs/CleanupTab";
 import DeepScanTab from "./tabs/DeepScanTab";
@@ -49,45 +41,57 @@ import "./styles/chat.css";
 import "./styles/settings.css";
 
 export default function App() {
+  /* ── Shell state ─────────────────────────────────────────── */
   const [tab, setTab] = useState("dashboard");
   const [diskOverview, setDiskOverview] = useState([]);
+  const [ollamaStatus, setOllamaStatus] = useState(null);
+  const [loading, setLoading] = useState("");
+  const [showSetup, setShowSetup] = useState(false);
+  const [logEntries, setLogEntries] = useState([]);
+
+  /* ── Drive detail modal ──────────────────────────────────── */
+  const [driveModalDisk, setDriveModalDisk] = useState(null);
+  const [driveModalReport, setDriveModalReport] = useState(null);
+  const [driveModalLoading, setDriveModalLoading] = useState(false);
+
+  /* ── Cleanup domain (deferred — useCleanup boundary not clear: DEBT-023) ── */
   const [scanData, setScanData] = useState([]);
   const [scanMode, setScanMode] = useState("smart");
   const [aiResult, setAiResult] = useState(null);
   const [cleanupResults, setCleanupResults] = useState([]);
-  const [loading, setLoading] = useState("");
   const [selectedActions, setSelectedActions] = useState({});
-  const [ollamaStatus, setOllamaStatus] = useState(null);
-  const [logEntries, setLogEntries] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [cleanupMode, setCleanupMode] = useState("ai");
   const [spaceBefore, setSpaceBefore] = useState(0);
   const [spaceAfter, setSpaceAfter] = useState(0);
   const [showSpaceSaved, setShowSpaceSaved] = useState(false);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState("");
-  const [chatLoading, setChatLoading] = useState(false);
-  const [chatModel, setChatModel] = useState("gemma3:4b");
-  const [apiKeys, setApiKeys] = useState({});
-  const [apiKeyInputs, setApiKeyInputs] = useState({});
-  const [apiTestResults, setApiTestResults] = useState({});
-  const [apiTesting, setApiTesting] = useState({});
-  const [chatProvider, setChatProvider] = useState("ollama");
-  const [chatExternalModel, setChatExternalModel] = useState("");
-  const [showSetup, setShowSetup] = useState(false);
-  const [schedule, setSchedule] = useState({ enabled: false, days: [], time: "03:00", actions: [], last_run: "" });
-  const [scheduleLoading, setScheduleLoading] = useState(false);
   const [zipLoading, setZipLoading] = useState(false);
   const [zipResult, setZipResult] = useState(null);
   const [sizeEstimates, setSizeEstimates] = useState({});
-  const [deepScanResult, setDeepScanResult] = useState(null);
-  const [deepScanLoading, setDeepScanLoading] = useState(false);
-  const [deepCleanResults, setDeepCleanResults] = useState(null);
-  // Drive detail modal
-  const [driveModalDisk, setDriveModalDisk] = useState(null);
-  const [driveModalReport, setDriveModalReport] = useState(null);
-  const [driveModalLoading, setDriveModalLoading] = useState(false);
+
   const { toasts, addToast } = useToast();
+
+  /* ── Domain hooks ────────────────────────────────────────── */
+  const {
+    apiKeys, apiKeyInputs, setApiKeyInputs, apiTestResults, apiTesting,
+    handleSaveApiKey, handleRemoveApiKey, handleTestApiKey, handleToggleApiKey,
+  } = useApiKeys({ addToast });
+
+  const {
+    deepScanResult, deepScanLoading, deepCleanResults,
+    handleDeepScan, handleDeepClean,
+  } = useDeepScan({ addToast, onDiskRefresh: setDiskOverview });
+
+  const {
+    chatMessages, chatInput, setChatInput, chatLoading,
+    chatModel, setChatModel, chatProvider, setChatProvider,
+    chatExternalModel, setChatExternalModel, sendChatMessage, clearChat, chatReady,
+  } = useChat({ ollamaStatus, apiKeys });
+
+  const {
+    schedule, setSchedule, scheduleLoading,
+    handleSaveSchedule, toggleScheduleDay, toggleScheduleAction,
+  } = useSchedule({ addToast });
 
   /* ===== DASHBOARD ===== */
   const loadDashboard = useCallback(async () => {
@@ -108,71 +112,6 @@ export default function App() {
   useEffect(() => {
     checkFirstRun().then((isFirst) => { if (isFirst) setShowSetup(true); }).catch(() => {});
   }, []);
-
-  /* ===== API KEYS ===== */
-  useEffect(() => {
-    getApiKeys().then((keys) => { setApiKeys(keys || {}); }).catch(() => {});
-  }, []);
-
-  /* ===== AUTO-SWITCH AI PROVIDER ===== */
-  useEffect(() => {
-    if (Object.keys(apiKeys).length === 0) return;
-    const external = AI_PROVIDERS.find((p) => apiKeys?.[p.id]?.enabled && apiKeys?.[p.id]?.key);
-    if (external) {
-      setChatProvider(external.id);
-      // Reset model to provider's default if current model doesn't belong to this provider
-      setChatExternalModel((prev) => {
-        const validModels = AI_PROVIDERS.find((p) => p.id === external.id)?.models || [];
-        return validModels.includes(prev) ? prev : (external.defaultModel || "");
-      });
-    } else {
-      setChatProvider("ollama");
-      ensureOllamaRunning().catch(() => {});
-    }
-  }, [apiKeys]);
-
-  /* ===== SCHEDULE ===== */
-  useEffect(() => {
-    getSchedule().then((s) => setSchedule(s || { enabled: false, days: [], time: "03:00", actions: [], last_run: "" })).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const result = await checkAndRunSchedule();
-        if (result?.ran) {
-          addToast(`🕐 ${result.message}`, "success");
-          getSchedule().then((s) => setSchedule(s)).catch(() => {});
-        }
-      } catch (e) { void e; }
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [addToast]);
-
-  const handleSaveSchedule = async () => {
-    setScheduleLoading(true);
-    try {
-      await saveSchedule(schedule);
-      addToast("Đã lưu lịch dọn tự động", "success");
-    } catch (e) {
-      addToast("Lỗi lưu lịch: " + e, "error");
-    }
-    setScheduleLoading(false);
-  };
-
-  const toggleScheduleDay = (day) => {
-    setSchedule((prev) => ({
-      ...prev,
-      days: prev.days.includes(day) ? prev.days.filter((d) => d !== day) : [...prev.days, day].sort(),
-    }));
-  };
-
-  const toggleScheduleAction = (actionType) => {
-    setSchedule((prev) => ({
-      ...prev,
-      actions: prev.actions.includes(actionType) ? prev.actions.filter((a) => a !== actionType) : [...prev.actions, actionType],
-    }));
-  };
 
   /* ===== ZIP BACKUP ===== */
   const handleZipBackup = async () => {
@@ -198,89 +137,6 @@ export default function App() {
       setSizeEstimates(map);
     } catch (e) { void e; }
   };
-
-  /* ===== API KEY HANDLERS ===== */
-  const handleSaveApiKey = async (providerId) => {
-    const key = (apiKeyInputs[providerId] || "").trim();
-    if (!key) { addToast("Vui lòng nhập API Key", "warning"); return; }
-    try {
-      await saveApiKey(providerId, key, true);
-      const updated = await getApiKeys();
-      setApiKeys(updated || {});
-      setApiKeyInputs((prev) => ({ ...prev, [providerId]: "" }));
-      addToast(`Đã lưu API Key ${providerId}`, "success");
-    } catch (e) { addToast("Lỗi lưu API Key: " + e, "error"); }
-  };
-
-  const handleRemoveApiKey = async (providerId) => {
-    try {
-      await removeApiKey(providerId);
-      const updated = await getApiKeys();
-      setApiKeys(updated || {});
-      setApiTestResults((prev) => ({ ...prev, [providerId]: null }));
-      addToast(`Đã xóa API Key ${providerId}`, "info");
-    } catch (e) { addToast("Lỗi xóa API Key: " + e, "error"); }
-  };
-
-  const handleTestApiKey = async (providerId) => {
-    const entry = apiKeys[providerId];
-    if (!entry?.key) { addToast("Chưa có API Key để kiểm tra", "warning"); return; }
-    setApiTesting((prev) => ({ ...prev, [providerId]: true }));
-    try {
-      const result = await testApiKey(providerId, entry.key);
-      setApiTestResults((prev) => ({ ...prev, [providerId]: { ok: true, msg: result } }));
-      addToast(result, "success");
-    } catch (e) {
-      setApiTestResults((prev) => ({ ...prev, [providerId]: { ok: false, msg: e } }));
-      addToast(String(e), "error");
-    }
-    setApiTesting((prev) => ({ ...prev, [providerId]: false }));
-  };
-
-  const handleToggleApiKey = async (providerId, enabled) => {
-    const entry = apiKeys[providerId];
-    if (!entry?.key) return;
-    try {
-      await saveApiKey(providerId, entry.key, enabled);
-      const updated = await getApiKeys();
-      setApiKeys(updated || {});
-    } catch (e) { addToast("Lỗi cập nhật: " + e, "error"); }
-  };
-
-  /* ===== CHAT MODEL — ưu tiên gemma3:4b, bỏ qua embed models ===== */
-  useEffect(() => {
-    if (!ollamaStatus?.models?.length) return;
-    const models = ollamaStatus.models; // Đã được lọc + ưu tiên từ backend
-    // Nếu model hiện tại không hợp lệ thì chọn model đầu tiên
-    if (!models.includes(chatModel)) {
-      setChatModel(models[0]);
-    }
-  }, [ollamaStatus, chatModel]);
-
-  const sendChatMessage = async (text) => {
-    const content = text || chatInput.trim();
-    if (!content) return;
-    const userMsg = { role: "user", content };
-    const newMessages = [...chatMessages, userMsg];
-    setChatMessages(newMessages);
-    setChatInput("");
-    setChatLoading(true);
-    try {
-      let reply;
-      const msgPayload = newMessages.map((m) => ({ role: m.role, content: m.content }));
-      if (chatProvider !== "ollama" && apiKeys[chatProvider]?.enabled && apiKeys[chatProvider]?.key) {
-        reply = await chatExternal(chatProvider, apiKeys[chatProvider].key, msgPayload, chatExternalModel || AI_PROVIDERS.find((p) => p.id === chatProvider)?.defaultModel || "");
-      } else {
-        reply = await chatAI(msgPayload, chatModel);
-      }
-      setChatMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-    } catch (e) {
-      setChatMessages((prev) => [...prev, { role: "assistant", content: "❌ Lỗi: " + e, error: true }]);
-    }
-    setChatLoading(false);
-  };
-
-  const clearChat = () => { setChatMessages([]); setChatInput(""); };
 
   /* ===== SCAN & CLEANUP ===== */
   const handleScan = async (mode) => {
@@ -403,48 +259,6 @@ export default function App() {
     setDriveModalReport(null);
   };
 
-  /* ===== DEEP SCAN ===== */
-  const handleDeepScan = async (options) => {
-    setDeepScanLoading(true);
-    setDeepCleanResults(null);
-    try {
-      const result = await deepScanDrive(options);
-      setDeepScanResult(result);
-      const safe = result.safe_display;
-      const caution = result.caution_display;
-      addToast(`Quét xong! 🟢 ${safe} an toàn | 🟡 ${caution} cẩn thận`, "success");
-    } catch (e) {
-      addToast("Lỗi quét sâu: " + e, "error");
-    }
-    setDeepScanLoading(false);
-  };
-
-  const handleDeepClean = async (paths) => {
-    setLoading("Đang xóa " + paths.length + " mục...");
-    try {
-      const results = await deepCleanItems(paths);
-      setDeepCleanResults(results);
-      const success = results.filter((r) => r.success).length;
-      const freed = results.reduce((s, r) => s + r.size_freed, 0);
-      addToast(
-        `Xóa xong ${success}/${results.length} mục — Giải phóng ${formatSize(freed)}`,
-        success === results.length ? "success" : "warning"
-      );
-      // Re-scan after clean to refresh data
-      if (deepScanResult) {
-        setDeepScanResult((prev) => ({
-          ...prev,
-          items: prev.items.filter((i) => !paths.includes(i.path)),
-        }));
-      }
-      // Refresh disk overview
-      getDiskOverview().then(setDiskOverview).catch(() => {});
-    } catch (e) {
-      addToast("Lỗi xóa: " + e, "error");
-    }
-    setLoading("");
-  };
-
   /* ===== HISTORY ===== */
   const loadHistory = useCallback(async () => {
     try {
@@ -467,9 +281,6 @@ export default function App() {
   const totalScanned = scanData.reduce((sum, item) => sum + item.size_bytes, 0);
   const selectedCount = Object.values(selectedActions).filter(Boolean).length;
   const spaceFreed = spaceAfter > spaceBefore ? spaceAfter - spaceBefore : 0;
-  const chatReady = chatProvider === "ollama"
-    ? !!ollamaStatus?.running
-    : !!(apiKeys[chatProvider]?.enabled && apiKeys[chatProvider]?.key);
 
   /* ===== RENDER ===== */
   return (
