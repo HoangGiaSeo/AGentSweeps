@@ -49,13 +49,11 @@ jobs:
           path: agent-sweeps-vscode/agent-sweeps-${{ steps.pkg.outputs.VERSION }}.vsix
 
       - name: Publish to VS Code Marketplace
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: |
           if [ "${{ github.event.inputs.pre_release }}" = "true" ]; then
-            npx @vscode/vsce publish --no-dependencies --pre-release --pat "$VSCE_PAT"
+            npx @vscode/vsce publish --no-dependencies --pre-release --pat "${{ secrets.VSCE_PAT }}"
           else
-            npx @vscode/vsce publish --no-dependencies --pat "$VSCE_PAT"
+            npx @vscode/vsce publish --no-dependencies --pat "${{ secrets.VSCE_PAT }}"
           fi
 
       - name: Create GitHub Release
