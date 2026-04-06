@@ -1,0 +1,96 @@
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 200px;
+  min-width: 200px;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  user-select: none;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.brand-icon { font-size: 22px; display: flex; align-items: center; }
+.brand-fish { width: 28px; height: 28px; object-fit: contain; border-radius: 6px; }
+.brand-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: -0.3px;
+}
+
+.sidebar-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all var(--transition);
+  text-align: left;
+  width: 100%;
+}
+
+.sidebar-tab:hover {
+  color: var(--text);
+  background: rgba(108, 140, 255, 0.06);
+}
+
+.sidebar-tab.active {
+  color: var(--accent);
+  background: var(--accent-bg);
+  border-right: 3px solid var(--accent);
+}
+
+.tab-icon { font-size: 16px; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.ollama-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.ollama-indicator.online .indicator-dot {
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+}
+
+.ollama-indicator.offline .indicator-dot {
+  background: var(--red);
+  box-shadow: 0 0 6px var(--red);
+}
+
+.indicator-text { color: var(--text-dim); }
+
+.version-text {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  opacity: 0.6;
+}
