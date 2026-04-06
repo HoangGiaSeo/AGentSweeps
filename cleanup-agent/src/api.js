@@ -51,3 +51,6 @@ export const completeSetup = () => invoke("complete_setup");
 
 export const deepScanDrive = (options) => invoke("deep_scan_drive", { options });
 export const deepCleanItems = (paths) => invoke("deep_clean_items", { paths });
+
+export const analyzeDrive = (drive, usedBytes) =>
+  invoke("analyze_drive", { drive, usedBytes });

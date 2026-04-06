@@ -4,6 +4,7 @@ export default function DashboardTab({
   loading,
   loadDashboard,
   handleScan,
+  onDriveClick,
 }) {
   return (
     <div className="page">
@@ -14,7 +15,12 @@ export default function DashboardTab({
           <h2 className="section-title">Dung lượng ổ đĩa</h2>
           <div className="disk-grid">
             {diskOverview.map((disk, i) => (
-              <div key={i} className="disk-card">
+              <div
+                key={i}
+                className="disk-card disk-card-clickable"
+                onClick={() => onDriveClick && onDriveClick(disk)}
+                title={`Nhấn để phân tích ổ ${disk.drive}`}
+              >
                 <div className="disk-header">
                   <span className="disk-drive">{disk.drive}</span>
                   <span className={`disk-percent ${disk.used_percent > 90 ? "text-red" : disk.used_percent > 70 ? "text-yellow" : "text-green"}`}>
@@ -34,6 +40,7 @@ export default function DashboardTab({
                   <span>Còn trống: {disk.free_display}</span>
                   <span>Tổng: {disk.total_display}</span>
                 </div>
+                <div className="disk-card-hint">🔬 Nhấn để phân tích chi tiết</div>
               </div>
             ))}
           </div>

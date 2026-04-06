@@ -7,3 +7,4 @@ pub mod settings;
 pub mod scheduler;
 pub mod setup;
 pub mod deep_scan;
+pub mod drive_detail;

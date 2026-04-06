@@ -22,6 +22,7 @@ import {
   ensureOllamaRunning,
   deepScanDrive,
   deepCleanItems,
+  analyzeDrive,
 } from "./api";
 import { TABS, MANUAL_ACTIONS, AI_PROVIDERS, formatSize } from "./constants";
 import { useToast } from "./hooks/useToast";
@@ -31,6 +32,7 @@ import DeepScanTab from "./tabs/DeepScanTab";
 import ChatTab from "./tabs/ChatTab";
 import HistoryTab from "./tabs/HistoryTab";
 import SettingsTab from "./tabs/SettingsTab";
+import DriveModal from "./components/DriveModal";
 import SetupModal from "./components/SetupModal";
 import "./styles/base.css";
 import "./styles/toast.css";
@@ -38,6 +40,7 @@ import "./styles/sidebar.css";
 import "./styles/dashboard.css";
 import "./styles/cleanup.css";
 import "./styles/deepscan.css";
+import "./styles/drivemodal.css";
 import "./styles/chat.css";
 import "./styles/settings.css";
 
@@ -76,6 +79,10 @@ export default function App() {
   const [deepScanResult, setDeepScanResult] = useState(null);
   const [deepScanLoading, setDeepScanLoading] = useState(false);
   const [deepCleanResults, setDeepCleanResults] = useState(null);
+  // Drive detail modal
+  const [driveModalDisk, setDriveModalDisk] = useState(null);
+  const [driveModalReport, setDriveModalReport] = useState(null);
+  const [driveModalLoading, setDriveModalLoading] = useState(false);
   const { toasts, addToast } = useToast();
 
   /* ===== DASHBOARD ===== */
@@ -372,6 +379,25 @@ export default function App() {
     setLoading("");
   };
 
+  /* ===== DRIVE DETAIL MODAL ===== */
+  const handleDriveClick = async (disk) => {
+    setDriveModalDisk(disk);
+    setDriveModalReport(null);
+    setDriveModalLoading(true);
+    try {
+      const report = await analyzeDrive(disk.drive, disk.used_bytes);
+      setDriveModalReport(report);
+    } catch (e) {
+      addToast("Lỗi phân tích ổ đĩa: " + e, "error");
+    }
+    setDriveModalLoading(false);
+  };
+
+  const handleDriveModalClose = () => {
+    setDriveModalDisk(null);
+    setDriveModalReport(null);
+  };
+
   /* ===== DEEP SCAN ===== */
   const handleDeepScan = async (options) => {
     setDeepScanLoading(true);
@@ -518,7 +544,24 @@ export default function App() {
         )}
 
         {tab === "dashboard" && (
-          <DashboardTab diskOverview={diskOverview} ollamaStatus={ollamaStatus} loading={loading} loadDashboard={loadDashboard} handleScan={handleScan} />
+          <DashboardTab
+            diskOverview={diskOverview}
+            ollamaStatus={ollamaStatus}
+            loading={loading}
+            loadDashboard={loadDashboard}
+            handleScan={handleScan}
+            onDriveClick={handleDriveClick}
+          />
+        )}
+
+        {driveModalDisk && (
+          <DriveModal
+            disk={driveModalDisk}
+            report={driveModalReport}
+            loading={driveModalLoading}
+            onClose={handleDriveModalClose}
+            onDeepScan={() => setTab("deepscan")}
+          />
         )}
 
         {tab === "cleanup" && (

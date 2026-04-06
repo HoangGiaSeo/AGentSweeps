@@ -1,0 +1,514 @@
+/* ============================================================
+   Drive Detail Modal — drivemodal.css
+   ============================================================ */
+
+/* ── Overlay ───────────────────────────────────────────────── */
+.dmodal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: dmodal-fade-in 0.18s ease;
+}
+
+@keyframes dmodal-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Window ────────────────────────────────────────────────── */
+.dmodal-window {
+  background: var(--bg-card, #1a1d27);
+  border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+  border-radius: 1rem;
+  width: min(960px, 100%);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: dmodal-slide-up 0.2s ease;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+}
+
+@keyframes dmodal-slide-up {
+  from { transform: translateY(28px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.dmodal-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  flex-shrink: 0;
+}
+
+.dmodal-drive-badge {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-primary, #fff);
+  font-family: "Cascadia Code", "Consolas", monospace;
+  background: var(--bg-input, rgba(255,255,255,0.06));
+  border-radius: 0.5rem;
+  padding: 0.2rem 0.7rem;
+  line-height: 1;
+}
+
+.dmodal-drive-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.dmodal-drive-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+}
+
+.dmodal-drive-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted, #888);
+  display: flex;
+  gap: 1rem;
+}
+
+.dmodal-usage-bar-wrap {
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-self: center;
+}
+
+.dmodal-usage-track {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-input, rgba(255,255,255,0.08));
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dmodal-usage-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.dmodal-usage-fill.good     { background: #22c55e; }
+.dmodal-usage-fill.warning  { background: #f59e0b; }
+.dmodal-usage-fill.critical { background: #ef4444; }
+
+.dmodal-usage-pct {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.dmodal-usage-pct.good     { color: #22c55e; }
+.dmodal-usage-pct.warning  { color: #f59e0b; }
+.dmodal-usage-pct.critical { color: #ef4444; }
+
+.dmodal-close-btn {
+  background: transparent;
+  border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+  color: var(--text-muted, #888);
+  border-radius: 0.4rem;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+
+.dmodal-close-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ── Tabs ──────────────────────────────────────────────────── */
+.dmodal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  padding: 0 1.5rem;
+  flex-shrink: 0;
+}
+
+.dmodal-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted, #888);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.7rem 1.1rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: -1px;
+}
+
+.dmodal-tab-btn:hover {
+  color: var(--text-primary, #fff);
+}
+
+.dmodal-tab-btn.active {
+  color: var(--accent, #4f8ef7);
+  border-bottom-color: var(--accent, #4f8ef7);
+}
+
+.dmodal-count-badge {
+  background: var(--bg-input, rgba(255,255,255,0.07));
+  border-radius: 1rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ── Body (scrollable) ─────────────────────────────────────── */
+.dmodal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ── Loading state ─────────────────────────────────────────── */
+.dmodal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  color: var(--text-muted, #888);
+  font-size: 0.9rem;
+}
+
+/* ── FOLDERS TAB ───────────────────────────────────────────── */
+.dmodal-folder-row {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr 7rem 5.5rem 4rem;
+  align-items: center;
+  gap: 0.6rem 0.9rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: background 0.1s;
+}
+
+.dmodal-folder-row:hover {
+  background: var(--bg-hover, rgba(255,255,255,0.04));
+}
+
+.dmodal-folder-icon {
+  font-size: 1rem;
+  text-align: center;
+}
+
+.dmodal-folder-name-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.dmodal-folder-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dmodal-folder-path {
+  font-size: 0.7rem;
+  color: var(--text-muted, #888);
+  font-family: "Cascadia Code", "Consolas", monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dmodal-bar-col {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dmodal-bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-input, rgba(255,255,255,0.06));
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dmodal-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent, #4f8ef7);
+  transition: width 0.5s ease;
+}
+
+.dmodal-bar-pct {
+  font-size: 0.72rem;
+  color: var(--text-muted, #888);
+  width: 3rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.dmodal-size {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.dmodal-count {
+  font-size: 0.72rem;
+  color: var(--text-muted, #888);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Column headers */
+.dmodal-col-header {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr 7rem 5.5rem 4rem;
+  gap: 0.6rem 0.9rem;
+  padding: 0.3rem 0.75rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted, #888);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  margin-bottom: 0.25rem;
+}
+
+/* ── APPS TAB ──────────────────────────────────────────────── */
+
+/* Category filter bar */
+.dmodal-cat-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  margin-bottom: 0.25rem;
+}
+
+.dmodal-cat-btn {
+  background: transparent;
+  border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+  color: var(--text-muted, #888);
+  border-radius: 1rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.dmodal-cat-btn:hover {
+  background: var(--bg-hover, rgba(255,255,255,0.05));
+  color: var(--text-primary, #fff);
+}
+
+.dmodal-cat-btn.active {
+  background: rgba(79, 142, 247, 0.15);
+  border-color: rgba(79, 142, 247, 0.4);
+  color: #60a5fa;
+}
+
+/* App row */
+.dmodal-app-row {
+  display: grid;
+  grid-template-columns: 1.8rem 1fr auto auto;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: background 0.1s;
+}
+
+.dmodal-app-row:hover {
+  background: var(--bg-hover, rgba(255,255,255,0.04));
+}
+
+.dmodal-app-icon {
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.dmodal-app-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.dmodal-app-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dmodal-app-exe {
+  font-size: 0.7rem;
+  color: var(--text-muted, #888);
+  font-family: "Cascadia Code", "Consolas", monospace;
+}
+
+.dmodal-cat-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.55rem;
+  border-radius: 1rem;
+  background: var(--bg-input, rgba(255,255,255,0.06));
+  color: var(--text-muted, #888);
+  white-space: nowrap;
+}
+
+.dmodal-last-used {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+
+.dmodal-last-used-primary {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  white-space: nowrap;
+}
+
+.dmodal-last-used-days {
+  font-size: 0.7rem;
+  color: var(--text-muted, #888);
+}
+
+/* Freshness coloring */
+.dmodal-app-row.fresh-today .dmodal-last-used-primary   { color: #22c55e; }
+.dmodal-app-row.fresh-week  .dmodal-last-used-primary   { color: #60a5fa; }
+.dmodal-app-row.fresh-month .dmodal-last-used-primary   { color: #f59e0b; }
+.dmodal-app-row.stale       .dmodal-last-used-primary   { color: #9ca3af; }
+
+/* ── Footer ────────────────────────────────────────────────── */
+.dmodal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.85rem 1.5rem;
+  border-top: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  flex-shrink: 0;
+}
+
+.dmodal-action-btn {
+  padding: 0.5rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 0.45rem;
+  cursor: pointer;
+  border: none;
+  transition: background 0.12s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dmodal-action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.dmodal-action-btn.primary {
+  background: var(--accent, #4f8ef7);
+  color: #fff;
+}
+
+.dmodal-action-btn.primary:hover {
+  background: #3b7dd8;
+}
+
+.dmodal-action-btn.secondary {
+  background: var(--bg-input, rgba(255,255,255,0.07));
+  color: var(--text-primary, #fff);
+  border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+}
+
+/* ── Disk card hover (dashboard) ───────────────────────────── */
+.disk-card-clickable {
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  user-select: none;
+}
+
+.disk-card-clickable:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent, #4f8ef7) !important;
+  box-shadow: 0 6px 24px rgba(79, 142, 247, 0.2);
+}
+
+.disk-card-clickable:active {
+  transform: translateY(-1px);
+}
+
+.disk-card-hint {
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--text-muted, #888);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+
+.disk-card-clickable:hover .disk-card-hint {
+  opacity: 1;
+}
+
+/* ── Empty / no-prefetch notice ────────────────────────────── */
+.dmodal-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.9rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  color: #f59e0b;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
+}

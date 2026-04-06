@@ -30,6 +30,7 @@ pub fn run() {
             commands::setup::start_model_pull,
             commands::deep_scan::deep_scan_drive,
             commands::deep_scan::deep_clean_items,
+            commands::drive_detail::analyze_drive,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri app");
