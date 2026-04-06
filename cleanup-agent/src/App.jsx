@@ -34,9 +34,13 @@ import HistoryTab from "./tabs/HistoryTab";
 import SettingsTab from "./tabs/SettingsTab";
 import DriveModal from "./components/DriveModal";
 import SetupModal from "./components/SetupModal";
+/* CSS import order: tokens → base → shared primitives → component styles */
+import "./styles/tokens.css";
 import "./styles/base.css";
-import "./styles/toast.css";
+import "./styles/modal.css";
+import "./styles/utilities.css";
 import "./styles/sidebar.css";
+import "./styles/toast.css";
 import "./styles/dashboard.css";
 import "./styles/cleanup.css";
 import "./styles/deepscan.css";

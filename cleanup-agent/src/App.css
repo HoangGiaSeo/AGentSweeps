@@ -1,9 +1,12 @@
-/* ===== RESET ===== */
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* ===== LEGACY GOD-FILE — NOT IMPORTED / DEAD CODE =====
+ * EXEC-01B (2026-04-07): This file is not imported anywhere in the build.
+ * All active CSS now lives in src/styles/*.css (imported via App.jsx).
+ * Token source of truth: src/styles/tokens.css
+ * App shell/layout:      src/styles/base.css
+ * Modal primitives:      src/styles/modal.css
+ * Button/text utilities: src/styles/utilities.css
+ * This file is retained for audit history only.
+ * ====================================================== */
 
 :root {
   --bg-dark: #0c0c1d;

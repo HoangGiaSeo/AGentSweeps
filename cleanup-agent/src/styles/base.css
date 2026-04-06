@@ -1,35 +1,9 @@
-/* ===== RESET ===== */
+/* ===== RESET & BODY ===== */
+/* Design tokens → tokens.css */
 *, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
-:root {
-  --bg-dark: #0c0c1d;
-  --bg-sidebar: #111128;
-  --bg-card: #161633;
-  --bg-card-hover: #1c1c42;
-  --bg-input: #0f0f2a;
-  --border: #2a2a50;
-  --border-light: #353565;
-  --text: #d0d0e8;
-  --text-dim: #8888aa;
-  --text-bright: #f0f0ff;
-  --accent: #6c8cff;
-  --accent-hover: #8cacff;
-  --accent-bg: rgba(108, 140, 255, 0.12);
-  --green: #4caf50;
-  --green-bg: rgba(76, 175, 80, 0.12);
-  --yellow: #ffb74d;
-  --yellow-bg: rgba(255, 183, 77, 0.12);
-  --red: #ef5350;
-  --red-bg: rgba(239, 83, 80, 0.12);
-  --purple: #b388ff;
-  --purple-bg: rgba(179, 136, 255, 0.12);
-  --radius: 10px;
-  --radius-sm: 6px;
-  --transition: 0.2s ease;
 }
 
 body {
@@ -141,152 +115,9 @@ body {
   line-height: 1.4;
 }
 
-/* ===== BUTTONS ===== */
-.btn {
-  padding: 9px 18px;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
+/* Buttons → utilities.css */
 
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.btn-scan {
-  background: var(--accent-bg);
-  color: var(--accent);
-  border: 1px solid rgba(108, 140, 255, 0.3);
-  margin-left: auto;
-}
-.btn-scan:hover:not(:disabled) { background: rgba(108, 140, 255, 0.2); }
-
-.btn-small {
-  padding: 6px 12px;
-  font-size: 12px;
-  background: var(--bg-input);
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-}
-.btn-small:hover:not(:disabled) { color: var(--text); border-color: var(--border-light); }
-
-.btn-tiny {
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  background: var(--bg-input);
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all var(--transition);
-}
-.btn-tiny:hover { color: var(--accent); border-color: var(--accent); }
-
-.btn-ai-large {
-  background: var(--purple-bg);
-  color: var(--purple);
-  border: 1px solid rgba(179, 136, 255, 0.3);
-  padding: 12px 24px;
-  font-size: 15px;
-}
-.btn-ai-large:hover:not(:disabled) { background: rgba(179, 136, 255, 0.2); }
-
-.btn-execute {
-  background: var(--green-bg);
-  color: var(--green);
-  border: 1px solid rgba(76, 175, 80, 0.3);
-  padding: 12px 24px;
-  font-size: 14px;
-}
-.btn-execute:hover:not(:disabled) { background: rgba(76, 175, 80, 0.2); }
-
-.btn-cancel {
-  background: var(--bg-input);
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-}
-
-.btn-danger {
-  background: var(--red-bg);
-  color: var(--red);
-  border: 1px solid rgba(239, 83, 80, 0.3);
-}
-.btn-danger:hover:not(:disabled) { background: rgba(239, 83, 80, 0.2); }
-
-.btn-small.btn-primary {
-  background: var(--blue);
-  color: #fff;
-}
-.btn-small.btn-primary:hover:not(:disabled) {
-  background: var(--blue-hover);
-  transform: scale(1.02);
-}
-.btn-small:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* ===== MODAL ===== */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-
-.modal {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  max-width: 440px;
-  width: 90%;
-}
-
-.modal h3 {
-  font-size: 18px;
-  color: var(--text-bright);
-  margin-bottom: 12px;
-}
-
-.modal p {
-  font-size: 13px;
-  color: var(--text-dim);
-  margin-bottom: 10px;
-}
-
-.confirm-list {
-  list-style: none;
-  margin-bottom: 14px;
-}
-
-.confirm-list li {
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 13px;
-}
-
-.confirm-action {
-  font-family: "Cascadia Code", "Consolas", monospace;
-  font-weight: 600;
-  color: var(--text-bright);
-}
-
-.confirm-warn { color: var(--yellow); font-size: 11px; }
-.confirm-note { color: var(--red) !important; font-weight: 500; }
-
-.modal-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 16px;
-}
+/* Modal primitives → modal.css */
 
 /* ===== EMPTY STATE ===== */
 .empty-state {
@@ -324,7 +155,4 @@ body {
 }
 .main-content::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
 
-.text-green { color: var(--green); }
-.text-yellow { color: var(--yellow); }
-.text-red { color: var(--red); }
-.text-dim { color: var(--text-dim); }
+/* Text utilities → utilities.css */

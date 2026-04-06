@@ -1,0 +1,36 @@
+/* ===== DESIGN TOKENS — single source of truth =====
+ * All :root CSS custom properties live here.
+ * EXEC-01B: extracted from base.css on 2026-04-07.
+ *
+ * DEBT-NOTE: Several files (chat.css, settings.css, deepscan.css, drivemodal.css)
+ * reference tokens NOT defined here (--surface, --blue, --blue-hover, --card-bg,
+ * --border-color, --text-primary, --text-muted). These were inherited from the
+ * legacy App.css token set during an incomplete migration. Their addition is
+ * deferred to a dedicated token-alignment wave (DEBT-014).
+ * ===================================================== */
+:root {
+  --bg-dark: #0c0c1d;
+  --bg-sidebar: #111128;
+  --bg-card: #161633;
+  --bg-card-hover: #1c1c42;
+  --bg-input: #0f0f2a;
+  --border: #2a2a50;
+  --border-light: #353565;
+  --text: #d0d0e8;
+  --text-dim: #8888aa;
+  --text-bright: #f0f0ff;
+  --accent: #6c8cff;
+  --accent-hover: #8cacff;
+  --accent-bg: rgba(108, 140, 255, 0.12);
+  --green: #4caf50;
+  --green-bg: rgba(76, 175, 80, 0.12);
+  --yellow: #ffb74d;
+  --yellow-bg: rgba(255, 183, 77, 0.12);
+  --red: #ef5350;
+  --red-bg: rgba(239, 83, 80, 0.12);
+  --purple: #b388ff;
+  --purple-bg: rgba(179, 136, 255, 0.12);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --transition: 0.2s ease;
+}

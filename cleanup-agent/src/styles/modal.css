@@ -1,0 +1,69 @@
+/* ===== MODAL PRIMITIVES — modal.css =====
+ * Base confirm/generic modal overlay and window.
+ * EXEC-01B: extracted from base.css on 2026-04-07.
+ * Scope: generic confirm modal used by CleanupTab.
+ * Out-of-scope: DriveModal (.dmodal-*) lives in drivemodal.css.
+ * ========================================= */
+
+/* Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* Window */
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 440px;
+  width: 90%;
+}
+
+.modal h3 {
+  font-size: 18px;
+  color: var(--text-bright);
+  margin-bottom: 12px;
+}
+
+.modal p {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+/* Confirm list */
+.confirm-list {
+  list-style: none;
+  margin-bottom: 14px;
+}
+
+.confirm-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.confirm-action {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.confirm-warn { color: var(--yellow); font-size: 11px; }
+.confirm-note { color: var(--red) !important; font-weight: 500; }
+
+/* Button row */
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
