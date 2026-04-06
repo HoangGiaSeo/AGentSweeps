@@ -23,7 +23,7 @@ pub fn run() {
             commands::scheduler::get_schedule,
             commands::scheduler::save_schedule,
             commands::scheduler::check_and_run_schedule,
-            commands::cleanup::zip_backup,
+            commands::backup::zip_backup,
             commands::cleanup::estimate_cleanup_size,
             commands::setup::check_ollama_setup,
             commands::setup::ensure_ollama_running,
