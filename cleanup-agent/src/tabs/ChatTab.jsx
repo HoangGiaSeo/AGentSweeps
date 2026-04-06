@@ -1,11 +1,56 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { AI_PROVIDERS, CHAT_SUGGESTIONS } from "../constants";
+
+/**
+ * ToolBubble — displays the tool evidence collected before an AI reply.
+ * Expand/collapse only — no copy button (V1 scope).
+ * Payload shown is always the safe/redacted contextText.
+ */
+function ToolBubble({ toolResults }) {
+  const [expanded, setExpanded] = useState(false);
+  const count = toolResults.length;
+  const label = count === 1 ? "1 nguồn dữ liệu" : `${count} nguồn dữ liệu`;
+
+  return (
+    <div className="chat-tool-bubble">
+      <div className="chat-tool-header">
+        <div className="chat-tool-header-left">
+          <span className="chat-tool-icon">🔧</span>
+          <span className="chat-tool-label">Agent đã thu thập {label}</span>
+          {toolResults.map((tr) => (
+            <span key={tr.id} className="chat-tool-tag">
+              {tr.label}{tr.freshness ? ` · ${tr.freshness}` : ""}
+            </span>
+          ))}
+        </div>
+        <button
+          className="chat-tool-toggle"
+          onClick={() => setExpanded((v) => !v)}
+          aria-label={expanded ? "Thu gọn" : "Mở rộng"}
+        >
+          {expanded ? "▲" : "▼"}
+        </button>
+      </div>
+      {expanded && (
+        <div className="chat-tool-items">
+          {toolResults.map((tr) => (
+            <div key={tr.id} className="chat-tool-item">
+              <div className="chat-tool-item-label">{tr.label}</div>
+              <pre className="chat-tool-item-content">{tr.contextText}</pre>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ChatTab({
   chatMessages,
   chatInput,
   setChatInput,
   chatLoading,
+  toolStatus,
   chatProvider,
   setChatProvider,
   chatModel,
@@ -121,32 +166,41 @@ export default function ChatTab({
           </div>
         ) : (
           <div className="chat-messages">
-            {chatMessages.map((msg, i) => (
-              <div
-                key={i}
-                className={`chat-bubble ${msg.role === "user" ? "chat-user" : "chat-ai"} ${msg.error ? "chat-error" : ""}`}
-              >
-                <div className="chat-bubble-avatar">
-                  {msg.role === "user" ? "👤" : <img src="/fish-icon-32.png" alt="AI" className="fish-avatar" />}
-                </div>
-                <div className="chat-bubble-content">
-                  <div className="chat-bubble-role">
-                    {msg.role === "user" ? "Bạn" : "Agent"}
+            {chatMessages.map((msg, i) => {
+              if (msg.role === "tool") {
+                return <ToolBubble key={i} toolResults={msg.toolResults} />;
+              }
+              return (
+                <div
+                  key={i}
+                  className={`chat-bubble ${msg.role === "user" ? "chat-user" : "chat-ai"} ${msg.error ? "chat-error" : ""}`}
+                >
+                  <div className="chat-bubble-avatar">
+                    {msg.role === "user" ? "👤" : <img src="/fish-icon-32.png" alt="AI" className="fish-avatar" />}
                   </div>
-                  <div className="chat-bubble-text">{msg.content}</div>
+                  <div className="chat-bubble-content">
+                    <div className="chat-bubble-role">
+                      {msg.role === "user" ? "Bạn" : "Agent"}
+                    </div>
+                    <div className="chat-bubble-text">{msg.content}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {chatLoading && (
               <div className="chat-bubble chat-ai">
                 <div className="chat-bubble-avatar"><img src="/fish-icon-32.png" alt="AI" className="fish-avatar" /></div>
                 <div className="chat-bubble-content">
                   <div className="chat-bubble-role">Agent</div>
-                  <div className="chat-typing">
-                    <span className="typing-dot" />
-                    <span className="typing-dot" />
-                    <span className="typing-dot" />
-                  </div>
+                  {toolStatus ? (
+                    <div className="chat-tool-status">{toolStatus}</div>
+                  ) : (
+                    <div className="chat-typing">
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                    </div>
+                  )}
                 </div>
               </div>
             )}

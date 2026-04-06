@@ -59,12 +59,12 @@ export const AI_PROVIDERS = [
 ];
 
 export const CHAT_SUGGESTIONS = [
+  "Ổ đĩa C còn trống bao nhiêu GB?",
+  "Lần trước dọn dẹp được bao nhiêu GB?",
   "Làm sao để giải phóng dung lượng ổ C nhanh nhất?",
   "Những folder nào an toàn để xóa trên Windows?",
   "Cách tắt ứng dụng khởi động cùng Windows?",
-  "Máy tính chạy chậm, nên làm gì?",
-  "Cách dọn cache trình duyệt Chrome?",
-  "Docker chiếm nhiều dung lượng, xử lý thế nào?",
+  "Docker chiếm nhiều bộ nhớ, xử lý thế nào?",
 ];
 
 export function formatSize(bytes) {

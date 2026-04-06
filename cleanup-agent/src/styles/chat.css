@@ -268,3 +268,105 @@
 .chat-body::-webkit-scrollbar-track { background: transparent; }
 .chat-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 .chat-body::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+/* ======= TOOL BUBBLE ======= */
+.chat-tool-bubble {
+  align-self: flex-start;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  border-radius: 10px;
+  padding: 10px 14px;
+  max-width: 85%;
+  animation: chatFadeIn 0.25s ease;
+}
+
+.chat-tool-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.chat-tool-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-tool-icon { font-size: 14px; flex-shrink: 0; }
+
+.chat-tool-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+
+.chat-tool-tag {
+  font-size: 11px;
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--blue);
+  padding: 2px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.chat-tool-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.chat-tool-toggle:hover { color: var(--text); }
+
+.chat-tool-items {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-tool-item-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.chat-tool-item-content {
+  font-size: 12px;
+  font-family: "Consolas", "Monaco", monospace;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Tool status text shown in loading bubble while tools are fetching */
+.chat-tool-status {
+  font-size: 13px;
+  color: var(--blue);
+  font-style: italic;
+  padding: 6px 0;
+  animation: toolStatusPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes toolStatusPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
