@@ -84,17 +84,20 @@
   </div>
 
   <div class="install-grid">
+    <a class="btn-install btn-primary" id="btn-win-setup" href="https://github.com/HoangGiaSeo/AGentSweeps/releases/latest/download/AGent-Sweeps-Setup-Windows.zip" onclick="trackInstall('windows-setup')">
+      <span class="btn-icon">🪟</span> Windows Setup (1-click)
+    </a>
     <a class="btn-install btn-primary" href="vscode:extension/HoangGiaSeo.agent-sweeps" onclick="trackInstall('vscode-url')">
       <span class="btn-icon">⚡</span> Install in VS Code
-    </a>
-    <a class="btn-install btn-secondary" href="vscode-insiders:extension/HoangGiaSeo.agent-sweeps">
-      <span class="btn-icon">🔮</span> Install in Insiders
     </a>
     <a class="btn-install btn-secondary" href="https://marketplace.visualstudio.com/items?itemName=HoangGiaSeo.agent-sweeps" target="_blank" rel="noopener">
       <span class="btn-icon">🛒</span> View on Marketplace
     </a>
   </div>
-  <p class="hint">Click "Install in VS Code" → VS Code tự mở và cài đặt trong 3 giây</p>
+  <p class="hint">
+    🪟 <strong>Windows</strong>: Tải ZIP → giải nén → double-click <code>setup.bat</code> → tự cài VS Code + Extension + Ollama AI cùng lúc<br/>
+    ⚡ <strong>Đã có VS Code</strong>: Click "Install in VS Code" → cài trong 3 giây
+  </p>
 </section>
 
 <!-- FEATURES -->
@@ -144,7 +147,19 @@
     <div class="method-card">
       <div class="method-num">1</div>
       <div class="method-body">
-        <h3>⚡ One-Click — VS Code URL (Nhanh nhất)</h3>
+        <h3>🪟 Windows Setup — Double-click (Đầy đủ nhất)</h3>
+        <p>Tải ZIP → giải nén → double-click <code>setup.bat</code>. Script tự động cài <strong>VS Code + AGent Sweeps + Ollama + AI model</strong> cùng lúc — không cần làm gì thêm!</p>
+        <a class="btn-install btn-primary" style="font-size:14px;padding:10px 18px;" href="https://github.com/HoangGiaSeo/AGentSweeps/releases/latest/download/AGent-Sweeps-Setup-Windows.zip">
+          <span>⬇️</span> Tải Windows Setup (.zip)
+        </a>
+        <p style="margin-top:8px;font-size:11px;color:var(--muted)">Trong .zip có: <code>setup.bat</code> + <code>setup.ps1</code> — double-click setup.bat là xong</p>
+      </div>
+    </div>
+
+    <div class="method-card">
+      <div class="method-num">2</div>
+      <div class="method-body">
+        <h3>⚡ One-Click — VS Code URL (Nhanh nhất nếu đã có VS Code)</h3>
         <p>Click nút bên dưới, VS Code tự mở và cài trong 3 giây</p>
         <a class="btn-install btn-primary" style="font-size:14px;padding:10px 18px;" href="vscode:extension/HoangGiaSeo.agent-sweeps">
           <span>⚡</span> Install in VS Code
@@ -153,10 +168,10 @@
     </div>
 
     <div class="method-card">
-      <div class="method-num">2</div>
+      <div class="method-num">3</div>
       <div class="method-body">
-        <h3>🖥️ Command Line (Windows PowerShell)</h3>
-        <p>Mở PowerShell và chạy lệnh sau — tự kiểm tra VS Code, tự tải, tự cài:</p>
+        <h3>🖥️ PowerShell 1 dòng (Windows — cài đầy đủ kể cả Ollama)</h3>
+        <p>Mở PowerShell và chạy — tự cài VS Code + Extension + Ollama + model AI:</p>
         <div class="code-block" id="cmd-ps">
 iwr -useb https://raw.githubusercontent.com/HoangGiaSeo/AGentSweeps/main/install.ps1 | iex
           <button class="copy-btn" onclick="copyCode('cmd-ps')">Copy</button>
@@ -165,9 +180,9 @@ iwr -useb https://raw.githubusercontent.com/HoangGiaSeo/AGentSweeps/main/install
     </div>
 
     <div class="method-card">
-      <div class="method-num">3</div>
+      <div class="method-num">4</div>
       <div class="method-body">
-        <h3>🐧 Command Line (Linux / macOS / WSL)</h3>
+        <h3>🐧 Bash 1 dòng (Linux / macOS / WSL — cài đầy đủ kể cả Ollama)</h3>
         <p>Mở Terminal và chạy:</p>
         <div class="code-block" id="cmd-sh">
 curl -fsSL https://raw.githubusercontent.com/HoangGiaSeo/AGentSweeps/main/install.sh | bash
@@ -177,7 +192,7 @@ curl -fsSL https://raw.githubusercontent.com/HoangGiaSeo/AGentSweeps/main/instal
     </div>
 
     <div class="method-card">
-      <div class="method-num">4</div>
+      <div class="method-num">5</div>
       <div class="method-body">
         <h3>⌨️ VS Code CLI</h3>
         <p>Nếu VS Code đã cài và có trong PATH:</p>
@@ -189,7 +204,7 @@ code --install-extension HoangGiaSeo.agent-sweeps
     </div>
 
     <div class="method-card">
-      <div class="method-num">5</div>
+      <div class="method-num">6</div>
       <div class="method-body">
         <h3>🔍 VS Code Marketplace Search</h3>
         <p>Mở VS Code → Extensions (<code>Ctrl+Shift+X</code>) → Tìm:</p>
@@ -201,7 +216,7 @@ AGent Sweeps
     </div>
 
     <div class="method-card">
-      <div class="method-num">6</div>
+      <div class="method-num">7</div>
       <div class="method-body">
         <h3>☁️ GitHub Codespaces / Dev Container</h3>
         <p>Extension tự động cài khi mở repo này trong Codespaces hoặc Dev Container</p>
@@ -214,7 +229,7 @@ gh codespace create --repo HoangGiaSeo/AGentSweeps
     </div>
 
     <div class="method-card">
-      <div class="method-num">7</div>
+      <div class="method-num">8</div>
       <div class="method-body">
         <h3>📦 Từ file .vsix (Offline)</h3>
         <p>Tải file .vsix từ GitHub Releases rồi cài thủ công:</p>

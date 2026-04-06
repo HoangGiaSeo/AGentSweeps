@@ -77,7 +77,7 @@ Hoặc `Ctrl+Shift+P` → **Extensions: Install from VSIX**
 `npm` · `pip` · `cargo` · `gradle` · `VS Code` · `Docker` · `temp files` · `Windows Temp` · `Prefetch` · `Windows Update` · `Crash Dumps` · `Thumbnail Cache`
 
 ### AI Providers
-- 🟡 **Ollama** — Miễn phí, chạy offline trên máy bạn (`gemma3:4b`, `llama3`, `mistral`...)
+- 🟡 **Ollama**  (`gemma3:4b`, `llama3`, `mistral`...)
 - 🟢 **OpenAI** — GPT-4o, GPT-4o-mini
 - 🔵 **Google Gemini** — Gemini 2.0 Flash, 1.5 Pro
 - 🟠 **Anthropic** — Claude Sonnet
@@ -136,7 +136,6 @@ AGentSweeps/
 ```
 
 ---
-
 ## 📜 License
 
 MIT © [HoangGiaSeo](https://github.com/HoangGiaSeo)

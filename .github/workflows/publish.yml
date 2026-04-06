@@ -56,6 +56,18 @@ jobs:
             npx @vscode/vsce publish --no-dependencies --pat "${{ secrets.VSCE_PAT }}"
           fi
 
+      - name: Package Windows installer (zip setup.bat + setup.ps1)
+        run: |
+          cd ${{ github.workspace }}
+          zip -j AGent-Sweeps-Setup-${{ steps.pkg.outputs.VERSION }}-Windows.zip setup.bat setup.ps1
+        working-directory: ${{ github.workspace }}
+
+      - name: Package Linux/macOS installer (zip install.sh)
+        run: |
+          cd ${{ github.workspace }}
+          zip -j AGent-Sweeps-Setup-${{ steps.pkg.outputs.VERSION }}-Linux-macOS.zip install.sh
+        working-directory: ${{ github.workspace }}
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
@@ -64,16 +76,34 @@ jobs:
           body: |
             ## AGent Sweeps v${{ steps.pkg.outputs.VERSION }}
 
-            AI-powered disk cleaner cho developer.
+            AI-powered disk cleaner cho developer — dọn npm/pip/cargo/Docker cache ngay trong VS Code.
 
-            ### Cài đặt
-            - **VS Code Marketplace** (tự động cập nhật): tìm `AGent Sweeps` trong Extensions
-            - **Thủ công**: tải file `.vsix` bên dưới → `Ctrl+Shift+P` → _Install from VSIX_
+            ---
 
-            ### Tính năng
-            - 🧹 Dọn dẹp cache: npm, pip, cargo, gradle, Docker, Windows temp
-            - 💬 Chat AI: Ollama (miễn phí), OpenAI, Gemini, Anthropic
-            - 📊 Tổng quan dung lượng ổ đĩa theo thời gian thực
+            ## ⚡ Cài đặt tự động (1 click)
+
+            ### 🪟 Windows — Double-click Setup
+            1. Tải **`AGent-Sweeps-Setup-${{ steps.pkg.outputs.VERSION }}-Windows.zip`** bên dưới
+            2. Giải nén → **Double-click `setup.bat`**
+            3. Script tự động cài: **VS Code + AGent Sweeps + Ollama + model AI** cùng lúc!
+
+            ### 🐧 Linux / macOS — 1 dòng lệnh
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/HoangGiaSeo/AGentSweeps/main/install.sh | bash
+            ```
+
+            ### ⚡ VS Code URL (nếu đã có VS Code)
+            [→ Click đây để cài ngay trong VS Code](vscode:extension/HoangGiaSeo.agent-sweeps)
+
+            ---
+
+            ## ✨ Tính năng
+            - 🧹 Dọn 12 loại cache: npm, pip, cargo, gradle, Docker, Windows temp...
+            - 💬 Chat AI: Ollama (miễn phí/offline), OpenAI, Gemini, Anthropic
+            - 📊 Tổng quan dung lượng ổ đĩa real-time
             - 📋 Lịch sử dọn dẹp
-          files: agent-sweeps-vscode/agent-sweeps-${{ steps.pkg.outputs.VERSION }}.vsix
+          files: |
+            agent-sweeps-vscode/agent-sweeps-${{ steps.pkg.outputs.VERSION }}.vsix
+            AGent-Sweeps-Setup-${{ steps.pkg.outputs.VERSION }}-Windows.zip
+            AGent-Sweeps-Setup-${{ steps.pkg.outputs.VERSION }}-Linux-macOS.zip
           token: ${{ secrets.GITHUB_TOKEN }}
