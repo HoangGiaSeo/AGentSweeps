@@ -20,7 +20,7 @@ function freshnessClass(days) {
 }
 
 // ── Folders tab ──────────────────────────────────────────────
-function FoldersTab({ topFolders, usedBytesTotal }) {
+function FoldersTab({ topFolders }) {
   if (!topFolders || topFolders.length === 0) {
     return (
       <div style={{ padding: "3rem", textAlign: "center", color: "var(--text-muted)" }}>

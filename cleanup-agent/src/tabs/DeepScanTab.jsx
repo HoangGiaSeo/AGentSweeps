@@ -149,7 +149,7 @@ export default function DeepScanTab({
   const [showConfirm, setShowConfirm] = useState(false);
   const [cleaning, setCleaning] = useState(false);
 
-  const items = scanResult?.items || [];
+  const items = useMemo(() => scanResult?.items || [], [scanResult]);
   const safeItems = items.filter((i) => i.safety_level === "safe");
   const cautionItems = items.filter((i) => i.safety_level === "caution");
   const protectedItems = items.filter((i) => i.safety_level === "protected");

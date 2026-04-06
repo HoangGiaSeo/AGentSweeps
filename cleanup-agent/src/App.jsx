@@ -255,7 +255,7 @@ export default function App() {
     if (!models.includes(chatModel)) {
       setChatModel(models[0]);
     }
-  }, [ollamaStatus]);
+  }, [ollamaStatus, chatModel]);
 
   const sendChatMessage = async (text) => {
     const content = text || chatInput.trim();
