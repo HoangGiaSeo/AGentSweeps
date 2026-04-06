@@ -268,3 +268,81 @@
 .chat-body::-webkit-scrollbar-track { background: transparent; }
 .chat-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 .chat-body::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+/* ── Agent tool bubble ─────────────────────────────────────── */
+.chat-tool-bubble {
+  align-self: flex-start;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  border-radius: 12px;
+  max-width: 85%;
+  overflow: hidden;
+  animation: chatFadeIn 0.25s ease;
+}
+
+.chat-tool-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.chat-tool-header:hover { background: rgba(59, 130, 246, 0.08); }
+
+.chat-tool-header-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+
+.chat-tool-toggle {
+  font-size: 10px;
+  color: var(--text-dim);
+  transition: transform 0.15s;
+}
+
+.chat-tool-items {
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-tool-item-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.chat-tool-item-content {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-family: monospace;
+  white-space: pre-wrap;
+  line-height: 1.55;
+  background: var(--bg-dark);
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+/* Tool status shown in typing bubble */
+.chat-tool-status {
+  font-size: 12px;
+  color: var(--blue);
+  font-style: italic;
+  padding: 4px 0;
+  animation: toolStatusPulse 1.4s infinite;
+}
+@keyframes toolStatusPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}

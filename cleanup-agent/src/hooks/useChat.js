@@ -1,14 +1,51 @@
 import { useState, useEffect } from "react";
-import { chatAI, chatExternal, ensureOllamaRunning } from "../api";
-import { AI_PROVIDERS } from "../constants";
+import { chatAI, chatExternal, ensureOllamaRunning, getDiskOverview, getCleanupLog } from "../api";
+import { AI_PROVIDERS, formatSize } from "../constants";
 
-export function useChat({ ollamaStatus, apiKeys }) {
+/* ── Agent Tool definitions ─────────────────────────────────── */
+const AGENT_TOOLS = [
+  {
+    id: "disk_overview",
+    patterns: [
+      "ổ đĩa", "dung lượng", "còn trống", "disk", "storage", "ổ c", "ổ d", "ổ e",
+      "bộ nhớ", "hard drive", "không gian", "bao nhiêu gb", "đang đầy", "free space",
+      "bao nhiêu chỗ", "còn bao nhiêu", "kiểm tra ổ", "xem ổ",
+    ],
+    label: "🔍 Đang đọc thông tin ổ đĩa...",
+  },
+  {
+    id: "cleanup_log",
+    patterns: [
+      "lịch sử", "đã dọn", "log", "đã xóa", "trước đây", "kết quả dọn",
+      "đã làm", "lần trước", "history", "đã dọn dẹp", "dọn được gì",
+    ],
+    label: "📋 Đang đọc lịch sử dọn dẹp...",
+  },
+];
+
+function formatDiskContext(disks) {
+  if (!disks?.length) return "Không có dữ liệu ổ đĩa.";
+  const lines = disks.map((d) => {
+    const usedPct = d.total > 0 ? Math.round((d.used / d.total) * 100) : 0;
+    return `• ${d.name || d.path}: Tổng ${formatSize(d.total)}, Đã dùng ${formatSize(d.used)} (${usedPct}%), Còn trống ${formatSize(d.available)}`;
+  });
+  return "📊 THÔNG TIN Ổ ĐĨA HIỆN TẠI:\n" + lines.join("\n");
+}
+
+function formatLogContext(entries) {
+  if (!entries?.length) return "Chưa có lịch sử dọn dẹp nào.";
+  const recent = [...entries].slice(-8);
+  return "📋 LỊCH SỬ DỌN DẸP (8 lần gần nhất):\n" + recent.join("\n");
+}
+
+export function useChat({ ollamaStatus, apiKeys, diskOverview = [] }) {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatModel, setChatModel] = useState("gemma3:4b");
   const [chatProvider, setChatProvider] = useState("ollama");
   const [chatExternalModel, setChatExternalModel] = useState("");
+  const [toolStatus, setToolStatus] = useState(null);
 
   /* Auto-select model when Ollama model list changes */
   useEffect(() => {
@@ -35,6 +72,33 @@ export function useChat({ ollamaStatus, apiKeys }) {
     }
   }, [apiKeys]);
 
+  const detectTools = (message) => {
+    const lower = message.toLowerCase();
+    return AGENT_TOOLS.filter((tool) =>
+      tool.patterns.some((p) => lower.includes(p))
+    );
+  };
+
+  const fetchToolContext = async (tools) => {
+    const results = [];
+    for (const tool of tools) {
+      setToolStatus(tool.label);
+      try {
+        if (tool.id === "disk_overview") {
+          const data = diskOverview?.length > 0 ? diskOverview : await getDiskOverview();
+          results.push({ id: tool.id, label: "Thông tin ổ đĩa", content: formatDiskContext(data) });
+        } else if (tool.id === "cleanup_log") {
+          const log = await getCleanupLog();
+          results.push({ id: tool.id, label: "Lịch sử dọn dẹp", content: formatLogContext(log) });
+        }
+      } catch {
+        /* tool fetch failed — continue without this data */
+      }
+    }
+    setToolStatus(null);
+    return results;
+  };
+
   const sendChatMessage = async (text) => {
     const content = text || chatInput.trim();
     if (!content) return;
@@ -44,8 +108,28 @@ export function useChat({ ollamaStatus, apiKeys }) {
     setChatInput("");
     setChatLoading(true);
     try {
+      /* 1. Detect intent → fetch live data */
+      const tools = detectTools(content);
+      const toolResults = tools.length > 0 ? await fetchToolContext(tools) : [];
+
+      /* 2. Inject real data into the user message sent to AI */
+      const contextText = toolResults.map((r) => r.content).join("\n\n");
+      const enrichedContent = contextText
+        ? `${content}\n\n[Dữ liệu thực tế từ hệ thống - hãy dùng thông tin này để trả lời chính xác]\n${contextText}`
+        : content;
+      const msgPayload = [
+        ...newMessages.slice(0, -1),
+        { role: "user", content: enrichedContent },
+      ].map((m) => ({ role: m.role, content: m.content }));
+
+      /* 3. Show tool result bubble before AI response */
+      if (toolResults.length > 0) {
+        setChatMessages((prev) => [...prev, { role: "tool", toolResults }]);
+      }
+
+      /* 4. Call AI */
+      setToolStatus("🤖 Đang gửi đến AI...");
       let reply;
-      const msgPayload = newMessages.map((m) => ({ role: m.role, content: m.content }));
       if (chatProvider !== "ollama" && apiKeys[chatProvider]?.enabled && apiKeys[chatProvider]?.key) {
         reply = await chatExternal(
           chatProvider,
@@ -61,6 +145,7 @@ export function useChat({ ollamaStatus, apiKeys }) {
       setChatMessages((prev) => [...prev, { role: "assistant", content: "❌ Lỗi: " + e, error: true }]);
     }
     setChatLoading(false);
+    setToolStatus(null);
   };
 
   const clearChat = () => {
@@ -86,5 +171,6 @@ export function useChat({ ollamaStatus, apiKeys }) {
     sendChatMessage,
     clearChat,
     chatReady,
+    toolStatus,
   };
 }

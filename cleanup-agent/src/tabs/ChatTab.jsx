@@ -1,11 +1,36 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { AI_PROVIDERS, CHAT_SUGGESTIONS } from "../constants";
+
+function ToolBubble({ toolResults }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="chat-tool-bubble">
+      <div className="chat-tool-header" onClick={() => setExpanded((e) => !e)}>
+        <div className="chat-tool-header-left">
+          🔧 Agent đã thu thập {toolResults.length} nguồn dữ liệu thực tế
+        </div>
+        <span className="chat-tool-toggle">{expanded ? "▲" : "▼"}</span>
+      </div>
+      {expanded && (
+        <div className="chat-tool-items">
+          {toolResults.map((r, i) => (
+            <div key={i}>
+              <div className="chat-tool-item-label">{r.label}</div>
+              <div className="chat-tool-item-content">{r.content}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ChatTab({
   chatMessages,
   chatInput,
   setChatInput,
   chatLoading,
+  toolStatus,
   chatProvider,
   setChatProvider,
   chatModel,
@@ -121,32 +146,41 @@ export default function ChatTab({
           </div>
         ) : (
           <div className="chat-messages">
-            {chatMessages.map((msg, i) => (
-              <div
-                key={i}
-                className={`chat-bubble ${msg.role === "user" ? "chat-user" : "chat-ai"} ${msg.error ? "chat-error" : ""}`}
-              >
-                <div className="chat-bubble-avatar">
-                  {msg.role === "user" ? "👤" : <img src="/fish-icon-32.png" alt="AI" className="fish-avatar" />}
-                </div>
-                <div className="chat-bubble-content">
-                  <div className="chat-bubble-role">
-                    {msg.role === "user" ? "Bạn" : "Agent"}
+            {chatMessages.map((msg, i) => {
+              if (msg.role === "tool") {
+                return <ToolBubble key={i} toolResults={msg.toolResults} />;
+              }
+              return (
+                <div
+                  key={i}
+                  className={`chat-bubble ${msg.role === "user" ? "chat-user" : "chat-ai"} ${msg.error ? "chat-error" : ""}`}
+                >
+                  <div className="chat-bubble-avatar">
+                    {msg.role === "user" ? "👤" : <img src="/fish-icon-32.png" alt="AI" className="fish-avatar" />}
                   </div>
-                  <div className="chat-bubble-text">{msg.content}</div>
+                  <div className="chat-bubble-content">
+                    <div className="chat-bubble-role">
+                      {msg.role === "user" ? "Bạn" : "Agent"}
+                    </div>
+                    <div className="chat-bubble-text">{msg.content}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {chatLoading && (
               <div className="chat-bubble chat-ai">
                 <div className="chat-bubble-avatar"><img src="/fish-icon-32.png" alt="AI" className="fish-avatar" /></div>
                 <div className="chat-bubble-content">
                   <div className="chat-bubble-role">Agent</div>
-                  <div className="chat-typing">
-                    <span className="typing-dot" />
-                    <span className="typing-dot" />
-                    <span className="typing-dot" />
-                  </div>
+                  {toolStatus ? (
+                    <div className="chat-tool-status">{toolStatus}</div>
+                  ) : (
+                    <div className="chat-typing">
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                    </div>
+                  )}
                 </div>
               </div>
             )}

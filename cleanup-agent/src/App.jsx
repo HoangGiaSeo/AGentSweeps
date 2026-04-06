@@ -67,7 +67,8 @@ export default function App() {
     chatMessages, chatInput, setChatInput, chatLoading,
     chatModel, setChatModel, chatProvider, setChatProvider,
     chatExternalModel, setChatExternalModel, sendChatMessage, clearChat, chatReady,
-  } = useChat({ ollamaStatus, apiKeys });
+    toolStatus,
+  } = useChat({ ollamaStatus, apiKeys, diskOverview });
 
   const {
     schedule, setSchedule, scheduleLoading,
@@ -233,7 +234,7 @@ export default function App() {
         {tab === "chat" && (
           <ChatTab
             chatMessages={chatMessages} chatInput={chatInput} setChatInput={setChatInput}
-            chatLoading={chatLoading}
+            chatLoading={chatLoading} toolStatus={toolStatus}
             chatModel={chatModel} setChatModel={setChatModel}
             chatProvider={chatProvider} setChatProvider={setChatProvider}
             chatExternalModel={chatExternalModel} setChatExternalModel={setChatExternalModel}
