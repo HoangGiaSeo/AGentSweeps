@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AGent Sweeps — AI Dev Disk Cleaner</title>
+<meta name="description" content="AI-powered disk cleaner for VS Code. Clears npm/pip/cargo/docker caches. Supports Ollama, OpenAI, Gemini, Anthropic." />
+<meta property="og:title" content="AGent Sweeps — AI Dev Disk Cleaner" />
+<meta property="og:description" content="Dọn dẹp cache developer thông minh ngay trong VS Code. Hỗ trợ AI miễn phí với Ollama." />
+<meta property="og:image" content="https://raw.githubusercontent.com/HoangGiaSeo/AGentSweeps/main/agent-sweeps-vscode/media/icon.png" />
+<meta name="twitter:card" content="summary" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #0078d4; --green: #107c41; --purple: #6264a7;
+    --dark: #1e1e1e; --darker: #141414; --card: #252526;
+    --text: #cccccc; --muted: #858585; --border: #3e3e42;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--darker); color: var(--text); line-height: 1.6; }
+
+  /* Hero */
+  .hero { text-align: center; padding: 80px 20px 60px; background: linear-gradient(180deg, #0d1117 0%, var(--darker) 100%); border-bottom: 1px solid var(--border); }
+  .hero img { width: 96px; height: 96px; border-radius: 20px; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(0,120,212,.4); }
+  .hero h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 700; color: #fff; margin-bottom: 12px; }
+  .hero h1 span { color: var(--blue); }
+  .hero p { font-size: 18px; color: var(--muted); max-width: 560px; margin: 0 auto 40px; }
+  .badge-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+  .badge-row img { height: 22px; }
+
+  /* Install buttons */
+  .install-grid { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+  .btn-install { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; text-decoration: none; transition: all .2s; border: none; cursor: pointer; }
+  .btn-primary { background: var(--blue); color: #fff; box-shadow: 0 4px 16px rgba(0,120,212,.4); }
+  .btn-primary:hover { background: #106ebe; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,120,212,.5); }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); transform: translateY(-2px); }
+  .btn-icon { font-size: 20px; }
+  .hint { font-size: 13px; color: var(--muted); }
+
+  /* Sections */
+  .section { max-width: 900px; margin: 60px auto; padding: 0 20px; }
+  .section-title { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .section-sub { color: var(--muted); margin-bottom: 32px; }
+
+  /* Feature grid */
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .feature-icon { font-size: 28px; margin-bottom: 10px; }
+  .feature-card h3 { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+  .feature-card p { font-size: 13px; color: var(--muted); }
+
+  /* Install methods */
+  .method-grid { display: flex; flex-direction: column; gap: 12px; }
+  .method-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; display: flex; align-items: flex-start; gap: 14px; }
+  .method-num { background: var(--blue); color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .method-body h3 { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .method-body p { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .code-block { background: var(--darker); border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace; font-size: 12px; color: #ce9178; position: relative; overflow-x: auto; }
+  .copy-btn { position: absolute; right: 6px; top: 6px; padding: 3px 8px; background: var(--border); border: none; border-radius: 3px; color: var(--text); font-size: 11px; cursor: pointer; transition: background .15s; }
+  .copy-btn:hover { background: var(--blue); color: #fff; }
+
+  /* Footer */
+  footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+  footer a { color: var(--blue); text-decoration: none; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--green); color: #fff; padding: 10px 16px; border-radius: 6px; font-size: 13px; z-index: 99; display: none; animation: slideup .2s; }
+  @keyframes slideup { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <img src="https://raw.githubusercontent.com/HoangGiaSeo/AGentSweeps/main/agent-sweeps-vscode/media/icon.png" alt="AGent Sweeps icon" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧹</text></svg>'" />
+  <h1>AGent <span>Sweeps</span></h1>
+  <p>AI-powered disk cleaner cho developer — dọn npm, pip, cargo, Docker cache ngay trong VS Code. Miễn phí với Ollama.</p>
+
+  <div class="badge-row">
+    <img src="https://img.shields.io/visual-studio-marketplace/v/HoangGiaSeo.agent-sweeps?label=Marketplace&color=0078d4&style=flat-square" alt="version" />
+    <img src="https://img.shields.io/visual-studio-marketplace/i/HoangGiaSeo.agent-sweeps?label=Installs&color=107c41&style=flat-square" alt="installs" />
+    <img src="https://img.shields.io/visual-studio-marketplace/r/HoangGiaSeo.agent-sweeps?label=Rating&color=6264a7&style=flat-square" alt="rating" />
+    <img src="https://img.shields.io/github/license/HoangGiaSeo/AGentSweeps?style=flat-square&color=858585" alt="license" />
+  </div>
+
+  <div class="install-grid">
+    <a class="btn-install btn-primary" href="vscode:extension/HoangGiaSeo.agent-sweeps" onclick="trackInstall('vscode-url')">
+      <span class="btn-icon">⚡</span> Install in VS Code
+    </a>
+    <a class="btn-install btn-secondary" href="vscode-insiders:extension/HoangGiaSeo.agent-sweeps">
+      <span class="btn-icon">🔮</span> Install in Insiders
+    </a>
+    <a class="btn-install btn-secondary" href="https://marketplace.visualstudio.com/items?itemName=HoangGiaSeo.agent-sweeps" target="_blank" rel="noopener">
+      <span class="btn-icon">🛒</span> View on Marketplace
+    </a>
+  </div>
+  <p class="hint">Click "Install in VS Code" → VS Code tự mở và cài đặt trong 3 giây</p>
+</section>
+
+<!-- FEATURES -->
+<div class="section">
+  <div class="section-title">✨ Tính năng</div>
+  <div class="section-sub">Tất cả trong một sidebar nhỏ gọn</div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🧹</div>
+      <h3>Dọn dẹp thông minh</h3>
+      <p>12 loại cache: npm, pip, cargo, gradle, Docker, Windows Update, temp, prefetch và nhiều hơn</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Tổng quan ổ đĩa</h3>
+      <p>Xem dung lượng tất cả ổ đĩa theo thời gian thực, thanh tiến độ màu sắc</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <h3>Chat AI</h3>
+      <p>Hỏi Agi về máy tính. Hỗ trợ Ollama (miễn phí/offline), OpenAI, Gemini, Anthropic</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <h3>Lịch sử</h3>
+      <p>Log đầy đủ mọi thao tác dọn dẹp, thống kê dung lượng đã giải phóng</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>An toàn</h3>
+      <p>Whitelist cứng cho 12 loại cache. Không bao giờ xóa file ngoài danh sách cho phép</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🆓</div>
+      <h3>Hoàn toàn miễn phí</h3>
+      <p>Extension miễn phí. AI miễn phí với Ollama local. Open source trên GitHub</p>
+    </div>
+  </div>
+</div>
+
+<!-- INSTALL METHODS -->
+<div class="section">
+  <div class="section-title">🚀 Tất cả cách cài đặt</div>
+  <div class="section-sub">Chọn cách phù hợp với bạn</div>
+  <div class="method-grid">
+
+    <div class="method-card">
+      <div class="method-num">1</div>
+      <div class="method-body">
+        <h3>⚡ One-Click — VS Code URL (Nhanh nhất)</h3>
+        <p>Click nút bên dưới, VS Code tự mở và cài trong 3 giây</p>
+        <a class="btn-install btn-primary" style="font-size:14px;padding:10px 18px;" href="vscode:extension/HoangGiaSeo.agent-sweeps">
+          <span>⚡</span> Install in VS Code
+        </a>
+      </div>
+    </div>
+
+    <div class="method-card">
+      <div class="method-num">2</div>
+      <div class="method-body">
+        <h3>🖥️ Command Line (Windows PowerShell)</h3>
+        <p>Mở PowerShell và chạy lệnh sau — tự kiểm tra VS Code, tự tải, tự cài:</p>
+        <div class="code-block" id="cmd-ps">
+iwr -useb https://raw.githubusercontent.com/HoangGiaSeo/AGentSweeps/main/install.ps1 | iex
+          <button class="copy-btn" onclick="copyCode('cmd-ps')">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="method-card">
+      <div class="method-num">3</div>
+      <div class="method-body">
+        <h3>🐧 Command Line (Linux / macOS / WSL)</h3>
+        <p>Mở Terminal và chạy:</p>
+        <div class="code-block" id="cmd-sh">
+curl -fsSL https://raw.githubusercontent.com/HoangGiaSeo/AGentSweeps/main/install.sh | bash
+          <button class="copy-btn" onclick="copyCode('cmd-sh')">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="method-card">
+      <div class="method-num">4</div>
+      <div class="method-body">
+        <h3>⌨️ VS Code CLI</h3>
+        <p>Nếu VS Code đã cài và có trong PATH:</p>
+        <div class="code-block" id="cmd-cli">
+code --install-extension HoangGiaSeo.agent-sweeps
+          <button class="copy-btn" onclick="copyCode('cmd-cli')">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="method-card">
+      <div class="method-num">5</div>
+      <div class="method-body">
+        <h3>🔍 VS Code Marketplace Search</h3>
+        <p>Mở VS Code → Extensions (<code>Ctrl+Shift+X</code>) → Tìm:</p>
+        <div class="code-block" id="cmd-search">
+AGent Sweeps
+          <button class="copy-btn" onclick="copyCode('cmd-search')">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="method-card">
+      <div class="method-num">6</div>
+      <div class="method-body">
+        <h3>☁️ GitHub Codespaces / Dev Container</h3>
+        <p>Extension tự động cài khi mở repo này trong Codespaces hoặc Dev Container</p>
+        <div class="code-block" id="cmd-dc">
+# .devcontainer/devcontainer.json đã được cấu hình sẵn
+gh codespace create --repo HoangGiaSeo/AGentSweeps
+          <button class="copy-btn" onclick="copyCode('cmd-dc')">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="method-card">
+      <div class="method-num">7</div>
+      <div class="method-body">
+        <h3>📦 Từ file .vsix (Offline)</h3>
+        <p>Tải file .vsix từ GitHub Releases rồi cài thủ công:</p>
+        <div class="code-block" id="cmd-vsix">
+code --install-extension agent-sweeps-0.2.0.vsix
+          <button class="copy-btn" onclick="copyCode('cmd-vsix')">Copy</button>
+        </div>
+        <p style="margin-top:8px"><a href="https://github.com/HoangGiaSeo/AGentSweeps/releases/latest" target="_blank" rel="noopener" style="color:#0078d4">⬇️ Tải .vsix mới nhất tại đây</a></p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>
+    Made with ❤️ by <a href="https://github.com/HoangGiaSeo" target="_blank" rel="noopener">HoangGiaSeo</a> &nbsp;·&nbsp;
+    <a href="https://github.com/HoangGiaSeo/AGentSweeps" target="_blank" rel="noopener">GitHub</a> &nbsp;·&nbsp;
+    <a href="https://marketplace.visualstudio.com/items?itemName=HoangGiaSeo.agent-sweeps" target="_blank" rel="noopener">Marketplace</a> &nbsp;·&nbsp;
+    MIT License
+  </p>
+</footer>
+
+<div class="toast" id="toast">✅ Đã copy!</div>
+
+<script>
+function copyCode(id) {
+  const el = document.getElementById(id);
+  const text = el.textContent.replace(/Copy\s*$/, '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const t = document.getElementById('toast');
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 2000);
+  });
+}
+function trackInstall(method) {
+  // analytics placeholder
+  console.log('install:', method);
+}
+</script>
+</body>
+</html>
