@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
+use std::time::{Duration, Instant};
 use crate::commands::scan::format_size;
 use crate::utils::logger::log_action;
 
@@ -232,6 +235,32 @@ fn get_folder_size_with_count(path: &Path) -> (u64, u64) {
     (size, count)
 }
 
+fn get_folder_size_bounded(path: &Path, budget: &AtomicU64, deadline: Instant) -> (u64, u64) {
+    let mut size = 0u64;
+    let mut count = 0u64;
+    if !path.exists() {
+        return (0, 0);
+    }
+    let Ok(entries) = fs::read_dir(path) else { return (0, 0) };
+    for entry in entries.flatten() {
+        if budget.load(Ordering::Relaxed) == 0 || Instant::now() >= deadline {
+            break;
+        }
+        budget.fetch_sub(1, Ordering::Relaxed);
+        if let Ok(meta) = entry.metadata() {
+            if meta.is_dir() {
+                let (s, c) = get_folder_size_bounded(&entry.path(), budget, deadline);
+                size += s;
+                count += c;
+            } else {
+                size += meta.len();
+                count += 1;
+            }
+        }
+    }
+    (size, count)
+}
+
 fn days_since_modified(path: &Path) -> i64 {
     fs::metadata(path)
         .ok()
@@ -340,8 +369,10 @@ fn scan_large_files(
     min_size: u64,
     max_depth: usize,
     depth: usize,
+    budget: &AtomicU64,
+    deadline: Instant,
 ) {
-    if depth > max_depth || !dir.exists() {
+    if depth > max_depth || !dir.exists() || budget.load(Ordering::Relaxed) == 0 || Instant::now() >= deadline {
         return;
     }
     let dir_str = dir.to_string_lossy().to_lowercase();
@@ -360,6 +391,10 @@ fn scan_large_files(
     let Ok(entries) = fs::read_dir(dir) else { return };
 
     for entry in entries.flatten() {
+        if budget.load(Ordering::Relaxed) == 0 || Instant::now() >= deadline {
+            break;
+        }
+        budget.fetch_sub(1, Ordering::Relaxed);
         let path = entry.path();
         let Ok(meta) = entry.metadata() else { continue };
 
@@ -399,7 +434,7 @@ fn scan_large_files(
                 icon: "📦".to_string(),
             });
         } else if meta.is_dir() && depth < max_depth {
-            scan_large_files(&path, items, min_size, max_depth, depth + 1);
+            scan_large_files(&path, items, min_size, max_depth, depth + 1, budget, deadline);
         }
     }
 }
@@ -459,8 +494,10 @@ fn scan_build_artifacts(
     items: &mut Vec<DeepScanItem>,
     max_depth: usize,
     depth: usize,
+    budget: &AtomicU64,
+    deadline: Instant,
 ) {
-    if depth > max_depth || !dir.exists() {
+    if depth > max_depth || !dir.exists() || budget.load(Ordering::Relaxed) == 0 || Instant::now() >= deadline {
         return;
     }
     let dir_str = dir.to_string_lossy().to_lowercase();
@@ -473,6 +510,10 @@ fn scan_build_artifacts(
 
     let Ok(entries) = fs::read_dir(dir) else { return };
     for entry in entries.flatten() {
+        if budget.load(Ordering::Relaxed) == 0 || Instant::now() >= deadline {
+            break;
+        }
+        budget.fetch_sub(1, Ordering::Relaxed);
         let path = entry.path();
         if !path.is_dir() {
             continue;
@@ -507,11 +548,11 @@ fn scan_build_artifacts(
         };
 
         if let Some((display_suffix, safety, reason)) = artifact_info {
-            let (size_bytes, item_count) = get_folder_size_with_count(&path);
+            let (size_bytes, item_count) = get_folder_size_bounded(&path, budget, deadline);
             if size_bytes < 1_048_576 {
                 // < 1 MB — skip but recurse
                 if depth < max_depth {
-                    scan_build_artifacts(&path, items, max_depth, depth + 1);
+                    scan_build_artifacts(&path, items, max_depth, depth + 1, budget, deadline);
                 }
                 continue;
             }
@@ -535,7 +576,7 @@ fn scan_build_artifacts(
                 icon: icon_for_category(if name_lower == "node_modules" { "node_modules" } else { "build_artifact" }).to_string(),
             });
         } else if depth < max_depth {
-            scan_build_artifacts(&path, items, max_depth, depth + 1);
+            scan_build_artifacts(&path, items, max_depth, depth + 1, budget, deadline);
         }
     }
 }
@@ -544,8 +585,7 @@ fn scan_build_artifacts(
 // MAIN COMMANDS
 // ============================================================
 
-#[tauri::command]
-pub fn deep_scan_drive(options: DeepScanOptions) -> DriveAnalysis {
+fn deep_scan_drive_blocking(options: DeepScanOptions) -> DriveAnalysis {
     let home = std::env::var("USERPROFILE").unwrap_or_else(|_| "C:\\Users\\Default".into());
     let local = std::env::var("LOCALAPPDATA")
         .unwrap_or_else(|_| format!("{}\\AppData\\Local", home));
@@ -565,7 +605,9 @@ pub fn deep_scan_drive(options: DeepScanOptions) -> DriveAnalysis {
         if !path.exists() {
             continue;
         }
-        let (size_bytes, item_count) = get_folder_size_with_count(path);
+        let zone_budget = Arc::new(AtomicU64::new(200_000));
+        let zone_deadline = Instant::now() + Duration::from_secs(3);
+        let (size_bytes, item_count) = get_folder_size_bounded(path, &zone_budget, zone_deadline);
         if size_bytes < min_bytes {
             continue;
         }
@@ -598,11 +640,15 @@ pub fn deep_scan_drive(options: DeepScanOptions) -> DriveAnalysis {
     // ── Browser cache additional discovery ───────────────────
     if options.include_browser_cache {
         let chrome_profiles = format!("{}\\Google\\Chrome\\User Data", local);
+        let br_budget = Arc::new(AtomicU64::new(200_000));
+        let br_deadline = Instant::now() + Duration::from_secs(5);
         scan_browser_profiles(
             Path::new(&chrome_profiles),
             &mut items,
             &mut seen_paths,
             "Chrome",
+            &br_budget,
+            br_deadline,
         );
     }
 
@@ -613,8 +659,10 @@ pub fn deep_scan_drive(options: DeepScanOptions) -> DriveAnalysis {
             format!("{}\\Documents", home),
             format!("{}\\Videos", home),
         ];
+        let lf_budget = Arc::new(AtomicU64::new(500_000));
+        let lf_deadline = Instant::now() + Duration::from_secs(10);
         for dir in &user_dirs {
-            scan_large_files(Path::new(dir), &mut items, 200 * 1_048_576, 4, 0);
+            scan_large_files(Path::new(dir), &mut items, 200 * 1_048_576, 4, 0, &lf_budget, lf_deadline);
         }
     }
 
@@ -635,9 +683,11 @@ pub fn deep_scan_drive(options: DeepScanOptions) -> DriveAnalysis {
             format!("{}\\repos", home),
             format!("{}\\code", home),
         ];
+        let art_budget = Arc::new(AtomicU64::new(500_000));
+        let art_deadline = Instant::now() + Duration::from_secs(15);
         for dir in &dev_dirs {
             if Path::new(dir).exists() {
-                scan_build_artifacts(Path::new(dir), &mut items, 4, 0);
+                scan_build_artifacts(Path::new(dir), &mut items, 4, 0, &art_budget, art_deadline);
             }
         }
     }
@@ -681,6 +731,8 @@ fn scan_browser_profiles(
     items: &mut Vec<DeepScanItem>,
     seen: &mut std::collections::HashSet<String>,
     browser: &str,
+    budget: &AtomicU64,
+    deadline: Instant,
 ) {
     if !profiles_dir.exists() {
         return;
@@ -697,7 +749,7 @@ fn scan_browser_profiles(
             if seen.contains(&cache_str.to_lowercase()) || !cache_path.exists() {
                 continue;
             }
-            let (size_bytes, item_count) = get_folder_size_with_count(&cache_path);
+            let (size_bytes, item_count) = get_folder_size_bounded(&cache_path, budget, deadline);
             if size_bytes < 1_048_576 {
                 continue;
             }
@@ -718,6 +770,23 @@ fn scan_browser_profiles(
             });
         }
     }
+}
+
+#[tauri::command]
+pub async fn deep_scan_drive(options: DeepScanOptions) -> DriveAnalysis {
+    tokio::task::spawn_blocking(move || deep_scan_drive_blocking(options))
+        .await
+        .unwrap_or_else(|_| DriveAnalysis {
+            items: vec![],
+            safe_bytes: 0,
+            caution_bytes: 0,
+            protected_info_bytes: 0,
+            safe_display: "0 B".into(),
+            caution_display: "0 B".into(),
+            protected_info_display: "0 B".into(),
+            total_reclaimable_bytes: 0,
+            total_reclaimable_display: "0 B".into(),
+        })
 }
 
 /// Delete items that have been user-selected (with safety re-check)

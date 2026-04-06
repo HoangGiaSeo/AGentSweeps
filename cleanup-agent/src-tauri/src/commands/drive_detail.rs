@@ -1,6 +1,9 @@
 use serde::Serialize;
 use std::fs;
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
+use std::time::{Duration, Instant};
 use crate::commands::scan::format_size;
 
 // ============================================================
@@ -50,8 +53,31 @@ fn days_since_modified(path: &Path) -> i64 {
         .unwrap_or(-1)
 }
 
-fn get_dir_size_and_count(path: &Path, max_depth: usize) -> (u64, u64) {
+// Directories that are known to be extremely large/slow — skip their contents
+const SLOW_DIRS: &[&str] = &[
+    "winsxs",
+    "winsxstemp",
+    "assembly",
+    "installer",
+    "catroot2",
+    "driverstore",
+    ".git",
+    "node_modules",
+];
+
+/// Budget-bounded recursive size + count.
+/// Stops early when entry_budget is exhausted OR time_limit elapses.
+fn get_dir_size_and_count(
+    path: &Path,
+    max_depth: usize,
+    entry_budget: &AtomicU64,
+    deadline: Instant,
+) -> (u64, u64) {
     if !path.exists() {
+        return (0, 0);
+    }
+    // Bail if budget exhausted or time limit reached
+    if entry_budget.load(Ordering::Relaxed) == 0 || Instant::now() >= deadline {
         return (0, 0);
     }
     let Ok(entries) = fs::read_dir(path) else {
@@ -60,10 +86,26 @@ fn get_dir_size_and_count(path: &Path, max_depth: usize) -> (u64, u64) {
     let mut size = 0u64;
     let mut count = 0u64;
     for entry in entries.flatten() {
+        if entry_budget.load(Ordering::Relaxed) == 0 || Instant::now() >= deadline {
+            break;
+        }
+        entry_budget.fetch_sub(1, Ordering::Relaxed);
         if let Ok(meta) = entry.metadata() {
             if meta.is_dir() {
                 if max_depth > 0 {
-                    let (s, c) = get_dir_size_and_count(&entry.path(), max_depth - 1);
+                    let dir_name = entry
+                        .file_name()
+                        .to_string_lossy()
+                        .to_lowercase();
+                    if SLOW_DIRS.contains(&dir_name.as_str()) {
+                        continue;
+                    }
+                    let (s, c) = get_dir_size_and_count(
+                        &entry.path(),
+                        max_depth - 1,
+                        entry_budget,
+                        deadline,
+                    );
                     size += s;
                     count += c;
                 }
@@ -192,8 +234,13 @@ fn scan_top_folders(drive: &str, used_bytes: u64) -> Vec<FolderSizeItem> {
         }
         let Ok(meta) = entry.metadata() else { continue };
 
+        // Per-folder budget: 500k entries max, 4 second deadline
+        let budget = Arc::new(AtomicU64::new(500_000));
+        let deadline = Instant::now() + Duration::from_secs(4);
+
         let (size_bytes, item_count) = if meta.is_dir() {
-            get_dir_size_and_count(&path, 10)
+            // Depth 4 is enough to capture real usage without crawling deep trees
+            get_dir_size_and_count(&path, 4, &budget, deadline)
         } else {
             (meta.len(), 1)
         };
@@ -311,17 +358,27 @@ fn scan_prefetch_apps() -> Vec<AppActivity> {
 // ============================================================
 
 #[tauri::command]
-pub fn analyze_drive(drive: String, used_bytes: u64) -> DriveDetailReport {
-    let top_folders = scan_top_folders(&drive, used_bytes);
-    let recent_apps = scan_prefetch_apps();
-    let top_count = top_folders.len();
-    let apps_count = recent_apps.len();
-
-    DriveDetailReport {
-        drive,
-        top_folders,
-        recent_apps,
-        top_count,
-        apps_count,
-    }
+pub async fn analyze_drive(drive: String, used_bytes: u64) -> DriveDetailReport {
+    // Move blocking I/O off the async runtime → UI stays responsive
+    tokio::task::spawn_blocking(move || {
+        let top_folders = scan_top_folders(&drive, used_bytes);
+        let recent_apps = scan_prefetch_apps();
+        let top_count = top_folders.len();
+        let apps_count = recent_apps.len();
+        DriveDetailReport {
+            drive,
+            top_folders,
+            recent_apps,
+            top_count,
+            apps_count,
+        }
+    })
+    .await
+    .unwrap_or_else(|_| DriveDetailReport {
+        drive: String::new(),
+        top_folders: vec![],
+        recent_apps: vec![],
+        top_count: 0,
+        apps_count: 0,
+    })
 }

@@ -381,6 +381,7 @@ export default function App() {
 
   /* ===== DRIVE DETAIL MODAL ===== */
   const handleDriveClick = async (disk) => {
+    if (driveModalLoading) return;
     setDriveModalDisk(disk);
     setDriveModalReport(null);
     setDriveModalLoading(true);
