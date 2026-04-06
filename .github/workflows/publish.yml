@@ -1,0 +1,81 @@
+name: Publish to VS Code Marketplace
+
+on:
+  push:
+    tags:
+      - "v*.*.*"          # trigger khi push tag: v0.1.0, v1.0.0, ...
+  workflow_dispatch:      # cho phep chay thu cong tu GitHub UI
+    inputs:
+      pre_release:
+        description: "Publish as pre-release?"
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent-sweeps-vscode
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: agent-sweeps-vscode/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile TypeScript
+        run: npm run compile
+
+      - name: Package extension (.vsix)
+        run: npx @vscode/vsce package --no-dependencies
+
+      - name: Get version from package.json
+        id: pkg
+        run: echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+
+      - name: Upload .vsix artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-sweeps-${{ steps.pkg.outputs.VERSION }}.vsix
+          path: agent-sweeps-vscode/agent-sweeps-${{ steps.pkg.outputs.VERSION }}.vsix
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ "${{ github.event.inputs.pre_release }}" = "true" ]; then
+            npx @vscode/vsce publish --no-dependencies --pre-release --pat "$VSCE_PAT"
+          else
+            npx @vscode/vsce publish --no-dependencies --pat "$VSCE_PAT"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: "AGent Sweeps v${{ steps.pkg.outputs.VERSION }}"
+          body: |
+            ## AGent Sweeps v${{ steps.pkg.outputs.VERSION }}
+
+            AI-powered disk cleaner cho developer.
+
+            ### Cài đặt
+            - **VS Code Marketplace** (tự động cập nhật): tìm `AGent Sweeps` trong Extensions
+            - **Thủ công**: tải file `.vsix` bên dưới → `Ctrl+Shift+P` → _Install from VSIX_
+
+            ### Tính năng
+            - 🧹 Dọn dẹp cache: npm, pip, cargo, gradle, Docker, Windows temp
+            - 💬 Chat AI: Ollama (miễn phí), OpenAI, Gemini, Anthropic
+            - 📊 Tổng quan dung lượng ổ đĩa theo thời gian thực
+            - 📋 Lịch sử dọn dẹp
+          files: agent-sweeps-vscode/agent-sweeps-${{ steps.pkg.outputs.VERSION }}.vsix
+          token: ${{ secrets.GITHUB_TOKEN }}

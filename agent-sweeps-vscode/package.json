@@ -1,0 +1,109 @@
+{
+  "name": "agent-sweeps",
+  "displayName": "AGent Sweeps — Dev Disk Cleaner",
+  "description": "AI-powered disk cleaner for developers: clears npm/pip/cargo/docker caches, temp files, and more. Supports Ollama, OpenAI, Gemini, Anthropic.",
+  "version": "0.1.0",
+  "publisher": "HoangGiaSeo",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "cleanup",
+    "disk",
+    "cache",
+    "npm",
+    "docker",
+    "ai",
+    "ollama",
+    "developer tools",
+    "disk cleaner",
+    "optimize"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HoangGiaSeo/AGentSweeps.git"
+  },
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "agentSweeps.open",
+        "title": "AGent Sweeps: Open Dashboard",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "agentSweeps.quickScan",
+        "title": "AGent Sweeps: Quick Scan Disk",
+        "icon": "$(search)"
+      },
+      {
+        "command": "agentSweeps.quickClean",
+        "title": "AGent Sweeps: Quick Clean Dev Cache",
+        "icon": "$(sparkle)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "agentSweeps",
+          "title": "AGent Sweeps",
+          "icon": "$(trash)"
+        }
+      ]
+    },
+    "views": {
+      "agentSweeps": [
+        {
+          "type": "webview",
+          "id": "agentSweeps.mainView",
+          "name": "AGent Sweeps"
+        }
+      ]
+    },
+    "menus": {
+      "commandPalette": [
+        { "command": "agentSweeps.open" },
+        { "command": "agentSweeps.quickScan" },
+        { "command": "agentSweeps.quickClean" }
+      ]
+    },
+    "configuration": {
+      "title": "AGent Sweeps",
+      "properties": {
+        "agentSweeps.ollamaUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama server URL"
+        },
+        "agentSweeps.defaultAiProvider": {
+          "type": "string",
+          "enum": ["ollama", "openai", "gemini", "anthropic"],
+          "default": "ollama",
+          "description": "Default AI provider"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.24.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.0"
+  }
+}

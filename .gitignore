@@ -1,0 +1,6 @@
+src-tauri/target/
+node_modules/
+*.vsix
+agent-sweeps-vscode/out/
+agent-sweeps-vscode/node_modules/
+agent-sweeps-vscode/package-lock.json
