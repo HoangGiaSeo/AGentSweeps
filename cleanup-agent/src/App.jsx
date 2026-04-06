@@ -1,23 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   getDiskOverview,
-  scanDisk,
-  runCleanup,
-  smartCleanup,
   checkOllama,
   getCleanupLog,
   clearCleanupLog,
-  zipBackup,
-  estimateCleanupSize,
   checkFirstRun,
   analyzeDrive,
 } from "./api";
-import { TABS, MANUAL_ACTIONS, formatSize } from "./constants";
+import { TABS } from "./constants";
 import { useToast } from "./hooks/useToast";
 import { useApiKeys } from "./hooks/useApiKeys";
 import { useDeepScan } from "./hooks/useDeepScan";
 import { useChat } from "./hooks/useChat";
 import { useSchedule } from "./hooks/useSchedule";
+import { useCleanup } from "./hooks/useCleanup";
 import DashboardTab from "./tabs/DashboardTab";
 import CleanupTab from "./tabs/CleanupTab";
 import DeepScanTab from "./tabs/DeepScanTab";
@@ -54,21 +50,6 @@ export default function App() {
   const [driveModalReport, setDriveModalReport] = useState(null);
   const [driveModalLoading, setDriveModalLoading] = useState(false);
 
-  /* ── Cleanup domain (deferred — useCleanup boundary not clear: DEBT-023) ── */
-  const [scanData, setScanData] = useState([]);
-  const [scanMode, setScanMode] = useState("smart");
-  const [aiResult, setAiResult] = useState(null);
-  const [cleanupResults, setCleanupResults] = useState([]);
-  const [selectedActions, setSelectedActions] = useState({});
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [cleanupMode, setCleanupMode] = useState("ai");
-  const [spaceBefore, setSpaceBefore] = useState(0);
-  const [spaceAfter, setSpaceAfter] = useState(0);
-  const [showSpaceSaved, setShowSpaceSaved] = useState(false);
-  const [zipLoading, setZipLoading] = useState(false);
-  const [zipResult, setZipResult] = useState(null);
-  const [sizeEstimates, setSizeEstimates] = useState({});
-
   const { toasts, addToast } = useToast();
 
   /* ── Domain hooks ────────────────────────────────────────── */
@@ -93,6 +74,16 @@ export default function App() {
     handleSaveSchedule, toggleScheduleDay, toggleScheduleAction,
   } = useSchedule({ addToast });
 
+  const cleanup = useCleanup({
+    addToast,
+    onDiskRefresh: setDiskOverview,
+    onTabChange: setTab,
+    onLoadingChange: setLoading,
+    ollamaStatus,
+  });
+
+  const scheduleBundle = { schedule, setSchedule, scheduleLoading, handleSaveSchedule, toggleScheduleDay, toggleScheduleAction };
+
   /* ===== DASHBOARD ===== */
   const loadDashboard = useCallback(async () => {
     setLoading("Đang tải thông tin hệ thống...");
@@ -112,132 +103,6 @@ export default function App() {
   useEffect(() => {
     checkFirstRun().then((isFirst) => { if (isFirst) setShowSetup(true); }).catch(() => {});
   }, []);
-
-  /* ===== ZIP BACKUP ===== */
-  const handleZipBackup = async () => {
-    const enabled = Object.entries(selectedActions).filter(([, v]) => v).map(([k]) => k);
-    if (enabled.length === 0) { addToast("Chưa chọn hành động nào để nén backup!", "warning"); return; }
-    setZipLoading(true);
-    setZipResult(null);
-    try {
-      const result = await zipBackup(enabled);
-      setZipResult(result);
-      addToast(`📦 Backup xong! ${result.file_count} files (${result.compressed_display})`, "success");
-    } catch (e) { addToast("Lỗi nén backup: " + e, "error"); }
-    setZipLoading(false);
-  };
-
-  const handleEstimateSize = async () => {
-    const types = Object.entries(selectedActions).filter(([, v]) => v).map(([k]) => k);
-    if (types.length === 0) return;
-    try {
-      const items = await estimateCleanupSize(types);
-      const map = {};
-      items.forEach((it) => { map[it.action_type] = it; });
-      setSizeEstimates(map);
-    } catch (e) { void e; }
-  };
-
-  /* ===== SCAN & CLEANUP ===== */
-  const handleScan = async (mode) => {
-    const m = mode || scanMode;
-    setScanMode(m);
-    setLoading(m === "deep" || m === "analyze" ? "Đang quét sâu hệ thống..." : "Đang quét hệ thống...");
-    try {
-      const res = await scanDisk(m);
-      setScanData(res);
-      setAiResult(null);
-      setSelectedActions({});
-      setCleanupResults([]);
-      setShowSpaceSaved(false);
-      setCleanupMode("ai");
-      setTab("cleanup");
-      addToast(`Quét xong! Tìm thấy ${res.length} mục (${formatSize(res.reduce((s, r) => s + r.size_bytes, 0))})`, "success");
-      if (m === "analyze") {
-        const currentOllama = ollamaStatus || await checkOllama();
-        if (currentOllama?.running) {
-          await triggerAI(res);
-        } else {
-          addToast("Ollama chưa chạy — chuyển sang chế độ thủ công", "warning");
-          setCleanupMode("manual");
-        }
-      }
-    } catch (e) { addToast("Quét thất bại: " + e, "error"); }
-    setLoading("");
-  };
-
-  const triggerAI = async (data) => {
-    const scanResults = data || scanData;
-    if (scanResults.length === 0) { addToast("Cần quét ổ đĩa trước!", "warning"); return; }
-    setLoading("AI đang phân tích hệ thống...");
-    try {
-      const res = await smartCleanup(JSON.stringify(scanResults));
-      setAiResult(res);
-      const defaults = {};
-      res.actions.forEach((a) => { defaults[a.type] = a.safe; });
-      setSelectedActions(defaults);
-      setCleanupMode("ai");
-      addToast(`AI đề xuất ${res.actions.length} hành động`, "success");
-    } catch (e) { addToast("Lỗi AI: " + e, "error"); }
-    setLoading("");
-  };
-
-  const toggleAction = (actionType) => {
-    setSelectedActions((prev) => ({ ...prev, [actionType]: !prev[actionType] }));
-  };
-
-  const selectAll = () => {
-    if (cleanupMode === "ai" && aiResult) {
-      const all = {};
-      aiResult.actions.forEach((a) => { all[a.type] = true; });
-      setSelectedActions(all);
-    } else {
-      const all = {};
-      MANUAL_ACTIONS.forEach((a) => { all[a.type] = true; });
-      setSelectedActions(all);
-    }
-  };
-
-  const selectNone = () => setSelectedActions({});
-
-  const selectSafe = () => {
-    if (aiResult) {
-      const safe = {};
-      aiResult.actions.forEach((a) => { if (a.safe) safe[a.type] = true; });
-      setSelectedActions(safe);
-    }
-  };
-
-  const handleCleanupClick = () => {
-    const enabled = Object.entries(selectedActions).filter(([, v]) => v);
-    if (enabled.length === 0) { addToast("Chưa chọn hành động nào!", "warning"); return; }
-    setShowConfirm(true);
-  };
-
-  const executeCleanup = async () => {
-    setShowConfirm(false);
-    const actions = Object.entries(selectedActions).map(([key, enabled]) => ({ action_type: key, enabled }));
-    const freeBeforeArr = await getDiskOverview();
-    const freeBefore = freeBeforeArr.find((d) => d.drive === "C:\\")?.free_bytes || 0;
-    setSpaceBefore(freeBefore);
-    setLoading("Đang dọn dẹp hệ thống...");
-    try {
-      const res = await runCleanup(actions);
-      setCleanupResults(res);
-      const freeAfterArr = await getDiskOverview();
-      const freeAfter = freeAfterArr.find((d) => d.drive === "C:\\")?.free_bytes || 0;
-      setDiskOverview(freeAfterArr);
-      setSpaceAfter(freeAfter);
-      setShowSpaceSaved(true);
-      const successCount = res.filter((r) => r.success).length;
-      const freed = freeAfter > freeBefore ? freeAfter - freeBefore : 0;
-      addToast(
-        `Hoàn tất! ${successCount}/${res.length} thành công${freed > 0 ? ` — Giải phóng ${formatSize(freed)}` : ""}`,
-        successCount === res.length ? "success" : "warning"
-      );
-    } catch (e) { addToast("Dọn dẹp thất bại: " + e, "error"); }
-    setLoading("");
-  };
 
   /* ===== DRIVE DETAIL MODAL ===== */
   const handleDriveClick = async (disk) => {
@@ -276,11 +141,6 @@ export default function App() {
   };
 
   useEffect(() => { if (tab === "history") loadHistory(); }, [tab, loadHistory]);
-
-  /* ===== COMPUTED ===== */
-  const totalScanned = scanData.reduce((sum, item) => sum + item.size_bytes, 0);
-  const selectedCount = Object.values(selectedActions).filter(Boolean).length;
-  const spaceFreed = spaceAfter > spaceBefore ? spaceAfter - spaceBefore : 0;
 
   /* ===== RENDER ===== */
   return (
@@ -330,42 +190,13 @@ export default function App() {
           </div>
         )}
 
-        {/* Confirmation Dialog */}
-        {showConfirm && (
-          <div className="modal-overlay" onClick={() => setShowConfirm(false)}>
-            <div className="modal" onClick={(e) => e.stopPropagation()}>
-              <h3>Xác nhận dọn dẹp</h3>
-              <p>Các hành động sau sẽ được thực thi:</p>
-              <ul className="confirm-list">
-                {Object.entries(selectedActions)
-                  .filter(([, enabled]) => enabled)
-                  .map(([action]) => {
-                    const aiAction = aiResult?.actions.find((a) => a.type === action);
-                    const manualAction = MANUAL_ACTIONS.find((a) => a.type === action);
-                    return (
-                      <li key={action}>
-                        <span className="confirm-action">{manualAction?.label || action}</span>
-                        {aiAction?.safe === false && <span className="confirm-warn"> (có rủi ro)</span>}
-                      </li>
-                    );
-                  })}
-              </ul>
-              <p className="confirm-note">Dữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
-              <div className="modal-buttons">
-                <button className="btn btn-cancel" onClick={() => setShowConfirm(false)}>Hủy bỏ</button>
-                <button className="btn btn-danger" onClick={executeCleanup}>Xác nhận &amp; Thực thi</button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {tab === "dashboard" && (
           <DashboardTab
             diskOverview={diskOverview}
             ollamaStatus={ollamaStatus}
             loading={loading}
             loadDashboard={loadDashboard}
-            handleScan={handleScan}
+            handleScan={cleanup.handleScan}
             onDriveClick={handleDriveClick}
           />
         )}
@@ -382,16 +213,10 @@ export default function App() {
 
         {tab === "cleanup" && (
           <CleanupTab
-            scanMode={scanMode} setScanMode={setScanMode} scanData={scanData} cleanupMode={cleanupMode} setCleanupMode={setCleanupMode}
-            aiResult={aiResult} selectedActions={selectedActions} setSelectedActions={setSelectedActions}
-            selectedCount={selectedCount} totalScanned={totalScanned} loading={loading} ollamaStatus={ollamaStatus}
-            cleanupResults={cleanupResults} showSpaceSaved={showSpaceSaved} spaceFreed={spaceFreed}
-            zipLoading={zipLoading} zipResult={zipResult} sizeEstimates={sizeEstimates}
-            handleScan={handleScan} triggerAI={triggerAI} toggleAction={toggleAction}
-            selectAll={selectAll} selectNone={selectNone} selectSafe={selectSafe}
-            schedule={schedule} setSchedule={setSchedule} scheduleLoading={scheduleLoading}
-            handleSaveSchedule={handleSaveSchedule} toggleScheduleDay={toggleScheduleDay} toggleScheduleAction={toggleScheduleAction}
-            handleCleanupClick={handleCleanupClick} handleZipBackup={handleZipBackup} handleEstimateSize={handleEstimateSize}
+            cleanup={cleanup}
+            scheduleBundle={scheduleBundle}
+            loading={loading}
+            ollamaStatus={ollamaStatus}
           />
         )}
 

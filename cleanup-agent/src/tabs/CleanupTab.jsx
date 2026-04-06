@@ -1,42 +1,69 @@
 import { MANUAL_ACTIONS, formatSize } from "../constants";
 
-export default function CleanupTab({
-  scanMode,
-  setScanMode,
-  scanData,
-  cleanupMode,
-  setCleanupMode,
-  aiResult,
-  selectedActions,
-  setSelectedActions,
-  selectedCount,
-  totalScanned,
-  loading,
-  ollamaStatus,
-  cleanupResults,
-  showSpaceSaved,
-  spaceFreed,
-  zipLoading,
-  zipResult,
-  sizeEstimates,
-  schedule,
-  setSchedule,
-  scheduleLoading,
-  handleSaveSchedule,
-  toggleScheduleDay,
-  toggleScheduleAction,
-  handleScan,
-  triggerAI,
-  toggleAction,
-  selectAll,
-  selectNone,
-  selectSafe,
-  handleCleanupClick,
-  handleZipBackup,
-  handleEstimateSize,
-}) {
+/**
+ * CleanupTab — consumes grouped domain contracts
+ *
+ * Props:
+ *   cleanup       — entire useCleanup() return object
+ *   scheduleBundle — { schedule, setSchedule, scheduleLoading, handleSaveSchedule,
+ *                      toggleScheduleDay, toggleScheduleAction }
+ *   loading        — App shell global loading string (read-only)
+ *   ollamaStatus   — App shell Ollama status (read-only)
+ */
+export default function CleanupTab({ cleanup, scheduleBundle, loading, ollamaStatus }) {
+  const {
+    scanData, scanMode, setScanMode,
+    aiResult,
+    cleanupMode, setCleanupMode, setSelectedActions,
+    selectedActions,
+    cleanupResults,
+    showConfirm, setShowConfirm,
+    showSpaceSaved, spaceFreed,
+    zipLoading, zipResult, sizeEstimates,
+    totalScanned, selectedCount,
+    handleScan, triggerAI,
+    toggleAction, selectAll, selectNone, selectSafe,
+    handleCleanupClick, executeCleanup,
+    handleZipBackup, handleEstimateSize,
+  } = cleanup;
+
+  const {
+    schedule, setSchedule,
+    scheduleLoading, handleSaveSchedule,
+    toggleScheduleDay, toggleScheduleAction,
+  } = scheduleBundle;
+
   return (
     <div className="page">
+      {/* Confirmation Dialog — owned by cleanup domain, rendered here, not in App shell */}
+      {showConfirm && (
+        <div className="modal-overlay" onClick={() => setShowConfirm(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Xác nhận dọn dẹp</h3>
+            <p>Các hành động sau sẽ được thực thi:</p>
+            <ul className="confirm-list">
+              {Object.entries(selectedActions)
+                .filter(([, enabled]) => enabled)
+                .map(([action]) => {
+                  const aiAction = aiResult?.actions.find((a) => a.type === action);
+                  const manualAction = MANUAL_ACTIONS.find((a) => a.type === action);
+                  return (
+                    <li key={action}>
+                      <span className="confirm-action">{manualAction?.label || action}</span>
+                      {aiAction?.safe === false && <span className="confirm-warn"> (có rủi ro)</span>}
+                    </li>
+                  );
+                })}
+            </ul>
+            <p className="confirm-note">Dữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+            <div className="modal-buttons">
+              <button className="btn btn-cancel" onClick={() => setShowConfirm(false)}>Hủy bỏ</button>
+              <button className="btn btn-danger" onClick={executeCleanup}>Xác nhận &amp; Thực thi</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <h1 className="page-title">Quản lý dọn dẹp</h1>
 
       {/* Mode + Scan Bar */}
