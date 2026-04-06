@@ -48,3 +48,6 @@ export const ensureOllamaRunning = () => invoke("ensure_ollama_running");
 export const startModelPull = (model) => invoke("start_model_pull", { model });
 export const checkFirstRun = () => invoke("check_first_run");
 export const completeSetup = () => invoke("complete_setup");
+
+export const deepScanDrive = (options) => invoke("deep_scan_drive", { options });
+export const deepCleanItems = (paths) => invoke("deep_clean_items", { paths });

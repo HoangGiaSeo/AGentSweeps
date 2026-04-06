@@ -1,6 +1,7 @@
 export const TABS = [
   { id: "dashboard", label: "Tổng quan", icon: "📊" },
   { id: "cleanup", label: "Dọn dẹp", icon: "🧹" },
+  { id: "deepscan", label: "Phân tích", icon: "🔬" },
   { id: "chat", label: "Trò chuyện", icon: "💬" },
   { id: "history", label: "Lịch sử", icon: "📋" },
   { id: "settings", label: "Cài đặt", icon: "⚙️" },

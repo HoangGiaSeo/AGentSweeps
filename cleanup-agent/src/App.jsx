@@ -20,11 +20,14 @@ import {
   estimateCleanupSize,
   checkFirstRun,
   ensureOllamaRunning,
+  deepScanDrive,
+  deepCleanItems,
 } from "./api";
 import { TABS, MANUAL_ACTIONS, AI_PROVIDERS, formatSize } from "./constants";
 import { useToast } from "./hooks/useToast";
 import DashboardTab from "./tabs/DashboardTab";
 import CleanupTab from "./tabs/CleanupTab";
+import DeepScanTab from "./tabs/DeepScanTab";
 import ChatTab from "./tabs/ChatTab";
 import HistoryTab from "./tabs/HistoryTab";
 import SettingsTab from "./tabs/SettingsTab";
@@ -34,6 +37,7 @@ import "./styles/toast.css";
 import "./styles/sidebar.css";
 import "./styles/dashboard.css";
 import "./styles/cleanup.css";
+import "./styles/deepscan.css";
 import "./styles/chat.css";
 import "./styles/settings.css";
 
@@ -69,6 +73,9 @@ export default function App() {
   const [zipLoading, setZipLoading] = useState(false);
   const [zipResult, setZipResult] = useState(null);
   const [sizeEstimates, setSizeEstimates] = useState({});
+  const [deepScanResult, setDeepScanResult] = useState(null);
+  const [deepScanLoading, setDeepScanLoading] = useState(false);
+  const [deepCleanResults, setDeepCleanResults] = useState(null);
   const { toasts, addToast } = useToast();
 
   /* ===== DASHBOARD ===== */
@@ -365,6 +372,48 @@ export default function App() {
     setLoading("");
   };
 
+  /* ===== DEEP SCAN ===== */
+  const handleDeepScan = async (options) => {
+    setDeepScanLoading(true);
+    setDeepCleanResults(null);
+    try {
+      const result = await deepScanDrive(options);
+      setDeepScanResult(result);
+      const safe = result.safe_display;
+      const caution = result.caution_display;
+      addToast(`Quét xong! 🟢 ${safe} an toàn | 🟡 ${caution} cẩn thận`, "success");
+    } catch (e) {
+      addToast("Lỗi quét sâu: " + e, "error");
+    }
+    setDeepScanLoading(false);
+  };
+
+  const handleDeepClean = async (paths) => {
+    setLoading("Đang xóa " + paths.length + " mục...");
+    try {
+      const results = await deepCleanItems(paths);
+      setDeepCleanResults(results);
+      const success = results.filter((r) => r.success).length;
+      const freed = results.reduce((s, r) => s + r.size_freed, 0);
+      addToast(
+        `Xóa xong ${success}/${results.length} mục — Giải phóng ${formatSize(freed)}`,
+        success === results.length ? "success" : "warning"
+      );
+      // Re-scan after clean to refresh data
+      if (deepScanResult) {
+        setDeepScanResult((prev) => ({
+          ...prev,
+          items: prev.items.filter((i) => !paths.includes(i.path)),
+        }));
+      }
+      // Refresh disk overview
+      getDiskOverview().then(setDiskOverview).catch(() => {});
+    } catch (e) {
+      addToast("Lỗi xóa: " + e, "error");
+    }
+    setLoading("");
+  };
+
   /* ===== HISTORY ===== */
   const loadHistory = useCallback(async () => {
     try {
@@ -484,6 +533,16 @@ export default function App() {
             schedule={schedule} setSchedule={setSchedule} scheduleLoading={scheduleLoading}
             handleSaveSchedule={handleSaveSchedule} toggleScheduleDay={toggleScheduleDay} toggleScheduleAction={toggleScheduleAction}
             handleCleanupClick={handleCleanupClick} handleZipBackup={handleZipBackup} handleEstimateSize={handleEstimateSize}
+          />
+        )}
+
+        {tab === "deepscan" && (
+          <DeepScanTab
+            scanning={deepScanLoading}
+            scanResult={deepScanResult}
+            cleanResults={deepCleanResults}
+            onScan={handleDeepScan}
+            onClean={handleDeepClean}
           />
         )}
 

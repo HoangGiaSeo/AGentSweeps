@@ -28,6 +28,8 @@ pub fn run() {
             commands::setup::check_ollama_setup,
             commands::setup::ensure_ollama_running,
             commands::setup::start_model_pull,
+            commands::deep_scan::deep_scan_drive,
+            commands::deep_scan::deep_clean_items,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri app");

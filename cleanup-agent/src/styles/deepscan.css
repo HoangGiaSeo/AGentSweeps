@@ -1,0 +1,594 @@
+/* ============================================================
+   Deep Scan Tab — deepscan.css
+   ============================================================ */
+
+.deepscan-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.deepscan-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.deepscan-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deepscan-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* ── Options panel ──────────────────────────────────────────── */
+.deepscan-options {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.deepscan-options-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.deepscan-option-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  margin-right: 0.25rem;
+}
+
+.deepscan-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.deepscan-checkbox input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.deepscan-checkbox:hover {
+  color: var(--text-primary);
+}
+
+.deepscan-size-select {
+  appearance: none;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 0.4rem;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+}
+
+.deepscan-size-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.deepscan-scan-btn {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  padding: 0.55rem 1.4rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.deepscan-scan-btn:hover:not(:disabled) {
+  background: var(--accent-hover, #3b7dd8);
+  transform: translateY(-1px);
+}
+
+.deepscan-scan-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Summary bar ────────────────────────────────────────────── */
+.deepscan-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.deepscan-summary-card {
+  background: var(--bg-card);
+  border: 1.5px solid;
+  border-radius: 0.75rem;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition: transform 0.15s;
+}
+
+.deepscan-summary-card:hover {
+  transform: translateY(-2px);
+}
+
+.deepscan-summary-card.safe {
+  border-color: #22c55e;
+}
+
+.deepscan-summary-card.caution {
+  border-color: #f59e0b;
+}
+
+.deepscan-summary-card.protected {
+  border-color: #ef4444;
+}
+
+.summary-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.summary-badge.safe   { color: #22c55e; }
+.summary-badge.caution { color: #f59e0b; }
+.summary-badge.protected { color: #ef4444; }
+
+.summary-size {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.summary-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ── Results section ────────────────────────────────────────── */
+.deepscan-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.deepscan-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+}
+
+.deepscan-section-header:hover {
+  background: var(--bg-hover, rgba(255,255,255,0.04));
+}
+
+.section-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.section-safety-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.section-safety-dot.safe     { background: #22c55e; }
+.section-safety-dot.caution  { background: #f59e0b; }
+.section-safety-dot.protected { background: #ef4444; }
+
+.section-title-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.section-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.section-count-badge {
+  background: var(--bg-input);
+  border-radius: 1rem;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.section-toggle-icon {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+}
+
+.section-toggle-icon.open {
+  transform: rotate(180deg);
+}
+
+/* ── Protected warning banner ───────────────────────────────── */
+.protected-banner {
+  margin: 0 1rem 0.75rem;
+  padding: 0.6rem 0.9rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ── Items list ─────────────────────────────────────────────── */
+.deepscan-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.deepscan-item {
+  display: grid;
+  grid-template-columns: 2rem 2rem 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.65rem 1rem;
+  border-top: 1px solid var(--border-color);
+  transition: background 0.12s;
+}
+
+.deepscan-item:hover {
+  background: var(--bg-hover, rgba(255,255,255,0.03));
+}
+
+.deepscan-item.protected-item {
+  opacity: 0.55;
+}
+
+.item-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-check input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.item-icon {
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.item-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-path {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: monospace;
+}
+
+.item-reason {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.item-size {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  text-align: right;
+  min-width: 5rem;
+}
+
+.item-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.item-cat-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cat-system_junk  { background: rgba(99,102,241,0.15); color: #818cf8; }
+.cat-dev_cache    { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.cat-app_cache    { background: rgba(16,185,129,0.15); color: #34d399; }
+.cat-browser_cache { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.cat-crash_logs   { background: rgba(239,68,68,0.15);  color: #f87171; }
+.cat-log_files    { background: rgba(239,68,68,0.12);  color: #fca5a5; }
+.cat-docker       { background: rgba(6,182,212,0.15);  color: #22d3ee; }
+.cat-build_artifact { background: rgba(16,185,129,0.12); color: #6ee7b7; }
+.cat-old_download { background: rgba(168,85,247,0.15); color: #c084fc; }
+.cat-large_file   { background: rgba(251,113,133,0.15); color: #fb7185; }
+.cat-node_modules { background: rgba(245,158,11,0.12); color: #fde68a; }
+.cat-user_junk    { background: rgba(99,102,241,0.12); color: #a5b4fc; }
+
+.item-age {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Action bar ─────────────────────────────────────────────── */
+.deepscan-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.deepscan-select-all-btn {
+  padding: 0.45rem 0.9rem;
+  background: transparent;
+  border: 1px solid #22c55e;
+  color: #22c55e;
+  border-radius: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.deepscan-select-all-btn:hover {
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.deepscan-deselect-btn {
+  padding: 0.45rem 0.9rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 0.4rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.deepscan-deselect-btn:hover {
+  background: var(--bg-hover, rgba(255,255,255,0.05));
+}
+
+.deepscan-delete-btn {
+  margin-left: auto;
+  padding: 0.55rem 1.25rem;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.deepscan-delete-btn:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.deepscan-delete-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.deepscan-selected-info {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.deepscan-selected-info strong {
+  color: var(--text-primary);
+}
+
+/* ── Confirm modal for deep clean ───────────────────────────── */
+.deep-confirm-list {
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--bg-input);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0.5rem 0;
+}
+
+.deep-confirm-list li {
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  list-style: disc;
+  margin-left: 1rem;
+}
+
+.deep-confirm-list li:last-child {
+  border-bottom: none;
+}
+
+/* ── Clean results ──────────────────────────────────────────── */
+.deepclean-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.deepclean-result-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.4rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.deepclean-result-item.ok {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.deepclean-result-item.fail {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.deepclean-result-path {
+  color: var(--text-muted);
+  font-family: monospace;
+  word-break: break-all;
+  flex: 1;
+}
+
+.deepclean-result-msg {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.deepclean-result-item.ok .deepclean-result-msg  { color: #22c55e; }
+.deepclean-result-item.fail .deepclean-result-msg { color: #ef4444; }
+
+/* ── Empty state ────────────────────────────────────────────── */
+.deepscan-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 2rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.deepscan-empty-icon {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+
+.deepscan-empty-text {
+  font-size: 0.95rem;
+}
+
+/* ── Scanning indicator ─────────────────────────────────────── */
+.deepscan-scanning-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 0.65rem;
+  font-size: 0.875rem;
+  color: #60a5fa;
+}
+
+/* ── Total reclaimable banner ───────────────────────────────── */
+.deepscan-reclaimable {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(59,130,246,0.1));
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.reclaimable-label {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.reclaimable-size {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #22c55e;
+}
