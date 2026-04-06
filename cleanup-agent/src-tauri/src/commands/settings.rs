@@ -159,7 +159,7 @@ pub async fn chat_external(
         .build()
         .map_err(|e| format!("HTTP client error: {}", e))?;
 
-    let system_content = "Bạn là trợ lý AI chuyên về dọn dẹp và tối ưu máy tính, tên gọi là Đệ. Bạn luôn gọi người dùng là 'đại ca'. Bạn xưng là 'Đệ'. Phong cách nói chuyện hài hước, hóm hỉnh, vui vẻ nhưng vẫn hữu ích và chính xác. Hãy trả lời bằng tiếng Việt hoặc ngôn ngữ theo yêu cầu, ngắn gọn và dí dỏm.";
+    let system_content = "Bạn là trợ lý AIA chuyên về dọn dẹp và tối ưu máy tính, tên gọi là Đệ. Bạn luôn gọi người dùng là 'đại ca'. Bạn xưng là 'Đệ'. Phong cách nói chuyện hài hước, hóm hỉnh, vui vẻ nhưng vẫn hữu ích và chính xác. Hãy trả lời bằng tiếng Việt hoặc ngôn ngữ theo yêu cầu, ngắn gọn và dí dỏm.";
 
     match provider.as_str() {
         "openai" => {
@@ -198,25 +198,66 @@ pub async fn chat_external(
                 model, key
             );
 
-            let mut parts = vec![serde_json::json!({"text": system_content})];
-            for m in &messages {
-                parts.push(serde_json::json!({"text": format!("[{}]: {}", m.role, m.content)}));
-            }
+            // Build proper multi-turn contents array (role: user/model alternating)
+            let contents: Vec<serde_json::Value> = messages.iter().map(|m| {
+                let role = if m.role == "assistant" { "model" } else { "user" };
+                serde_json::json!({
+                    "role": role,
+                    "parts": [{"text": m.content}]
+                })
+            }).collect();
 
             let res = client
                 .post(&url)
                 .json(&serde_json::json!({
-                    "contents": [{"parts": parts}]
+                    "system_instruction": {"parts": [{"text": system_content}]},
+                    "contents": contents
                 }))
                 .send()
                 .await
                 .map_err(|e| format!("Lỗi kết nối Gemini: {}", e))?;
 
+            let status = res.status();
             let body: serde_json::Value = res.json().await
                 .map_err(|e| format!("Lỗi parse response: {}", e))?;
 
             if let Some(err) = body.get("error") {
-                return Err(format!("Gemini: {}", err.get("message").and_then(|m| m.as_str()).unwrap_or("Unknown error")));
+                let msg = err.get("message").and_then(|m| m.as_str()).unwrap_or("Unknown error");
+
+                // Detect quota / rate-limit errors (HTTP 429 or RESOURCE_EXHAUSTED)
+                if status.as_u16() == 429
+                    || msg.contains("quota")
+                    || msg.contains("RESOURCE_EXHAUSTED")
+                    || msg.contains("rate limit")
+                {
+                    // Extract retry_delay from error details if present
+                    let retry_secs = err
+                        .get("details")
+                        .and_then(|d| d.as_array())
+                        .and_then(|arr| {
+                            arr.iter().find(|item| {
+                                item.get("metadata")
+                                    .and_then(|m| m.get("retry_delay"))
+                                    .is_some()
+                            })
+                        })
+                        .and_then(|item| item.get("metadata"))
+                        .and_then(|m| m.get("retry_delay"))
+                        .and_then(|r| r.as_str())
+                        .and_then(|s| s.trim_end_matches('s').parse::<f64>().ok());
+
+                    let retry_hint = match retry_secs {
+                        Some(secs) => format!(" Vui lòng chờ {:.0} giây rồi thử lại.", secs),
+                        None => " Vui lòng thử lại sau vài phút.".to_string(),
+                    };
+
+                    return Err(format!(
+                        "⚠️ Gemini đã vượt hạn ngạch miễn phí.{} Gợi ý: chuyển sang model gemini-1.5-flash (tab Trò chuyện → chọn model), hoặc bật thanh toán tại https://ai.dev/rate-limit, hoặc dùng Ollama (hoàn toàn miễn phí).",
+                        retry_hint
+                    ));
+                }
+
+                return Err(format!("Gemini: {}", msg));
             }
 
             body["candidates"][0]["content"]["parts"][0]["text"]
