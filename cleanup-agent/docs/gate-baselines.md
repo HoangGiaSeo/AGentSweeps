@@ -78,6 +78,8 @@ dist/assets/index-D23UFLBH.js   254.24 kB │ gzip: 76.37 kB
 **Modules:** 11  
 **Meaning:** IPC surface is stable and fully accounted for.
 
+> **Correction note:** The original codebase scan (`executive-summary.md`, `project-topology-overview.md`) recorded 28 commands. EXEC-05 enumerated the `generate_handler!` macro directly and reconciled against all 11 module files: verified count is **27**. The prior figure was a counting error in the scan phase — no command was removed. 27 is the correct locked baseline.
+
 ---
 
 ## Gate 7 — Debt Register

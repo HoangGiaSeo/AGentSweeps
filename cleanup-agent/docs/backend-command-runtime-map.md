@@ -5,6 +5,14 @@
 
 ---
 
+## Baseline Correction — Command Count
+
+> **CORRECTION (EXEC-05):** The original codebase scan (`reports/cto/codebase-scan/executive-summary.md`, `project-topology-overview.md`) recorded **28 registered commands** in `lib.rs`. The EXEC-05 audit verified the actual count against the `generate_handler!` macro and all 11 module files: the correct count is **27**.
+>
+> The 28-command figure appears to have been an off-by-one counting error in the initial scan. No command was removed between the scan and EXEC-05 — the scan count was simply wrong. This doc is the corrected baseline. All future docs and reports must use **27**.
+
+---
+
 ## Architecture Overview
 
 - **IPC bridge:** Tauri 2 `invoke()` — JS calls Rust via `tauri::command` attribute

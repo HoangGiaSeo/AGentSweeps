@@ -4,6 +4,8 @@
 **Locked:** 2026-04-07 (EXEC-05 Documentation Lock)  
 **Stack:** Tauri 2 + React 18 + Vite 8 + Rust (stable/MSVC)
 
+> **Baseline correction — Tauri command count:** The original codebase scan recorded 28 registered commands. EXEC-05 audit verified the actual `generate_handler!` macro list: correct count is **27**. The scan figure was an enumeration error; no command was removed. All EXEC-05 docs use 27 as the locked baseline.
+
 ---
 
 ## Layer Overview
