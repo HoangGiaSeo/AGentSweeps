@@ -40,7 +40,7 @@
 }
 
 .chat-model-select {
-  background: var(--surface);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text);
   padding: 5px 10px;
@@ -92,7 +92,7 @@
 }
 .chat-offline-notice p { color: var(--yellow); margin-bottom: 8px; }
 .chat-offline-notice code {
-  background: var(--surface);
+  background: var(--bg-card);
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 13px;
@@ -112,7 +112,7 @@
   gap: 8px;
 }
 .chat-suggestion-btn {
-  background: var(--surface);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text);
   padding: 10px 14px;
@@ -163,7 +163,7 @@
 
 .chat-ai {
   align-self: flex-start;
-  background: var(--surface);
+  background: var(--bg-card);
   border: 1px solid var(--border);
 }
 .chat-ai .chat-bubble-text { color: var(--text); }
@@ -233,7 +233,7 @@
 
 .chat-input {
   flex: 1;
-  background: var(--surface);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text-bright);
   padding: 12px 16px;

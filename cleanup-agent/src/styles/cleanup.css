@@ -265,7 +265,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 14px;
-  background: var(--card-bg);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
   margin-top: 12px;
@@ -347,7 +347,7 @@
   font-weight: 600;
   cursor: pointer;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-card);
   color: var(--text);
   transition: all 0.15s;
 }
@@ -364,7 +364,7 @@
   font-weight: 600;
   cursor: pointer;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-card);
   color: var(--text);
   transition: all 0.15s;
 }

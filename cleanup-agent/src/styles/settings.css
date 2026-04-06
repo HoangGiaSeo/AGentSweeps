@@ -103,7 +103,7 @@
 }
 
 .api-provider-card {
-  background: var(--card-bg);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
@@ -248,21 +248,21 @@
   gap: 8px;
 }
 
-.btn-tiny {
+.api-key-actions .btn-tiny {
   font-size: 0.75rem;
   padding: 4px 10px;
   border-radius: 6px;
-  background: var(--surface);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text);
   cursor: pointer;
   transition: background 0.15s;
   white-space: nowrap;
 }
-.btn-tiny:hover { background: var(--surface-hover, var(--border)); }
-.btn-tiny:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-tiny.btn-danger { color: var(--red); border-color: rgba(239,68,68,0.3); }
-.btn-tiny.btn-danger:hover { background: rgba(239,68,68,0.1); }
+.api-key-actions .btn-tiny:hover { background: var(--bg-card-hover); }
+.api-key-actions .btn-tiny:disabled { opacity: 0.5; cursor: not-allowed; }
+.api-key-actions .btn-tiny.btn-danger { color: var(--red); border-color: rgba(239,68,68,0.3); }
+.api-key-actions .btn-tiny.btn-danger:hover { background: rgba(239,68,68,0.1); }
 
 /* Input group for new key */
 .api-key-input-group {
@@ -275,7 +275,7 @@
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-card);
   color: var(--text);
   font-size: 0.82rem;
   font-family: monospace;
@@ -305,7 +305,7 @@
 
 /* ===== SCHEDULE SETTINGS ===== */
 .schedule-card {
-  background: var(--card-bg);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
@@ -360,7 +360,7 @@
   height: 34px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-card);
   color: var(--text-dim);
   font-size: 0.78rem;
   font-weight: 600;
@@ -382,7 +382,7 @@
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--bg-card);
   color: var(--text);
   font-size: 0.85rem;
   outline: none;

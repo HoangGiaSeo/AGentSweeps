@@ -2,9 +2,8 @@
  * Shared button variants and text color helpers.
  * EXEC-01B: extracted from base.css on 2026-04-07.
  *
- * CASCADE NOTE: settings.css redefines .btn-tiny with --surface (an undefined
- * token) for settings-specific override. That override still wins via cascade
- * (settings.css loads after this file). Documented as DEBT-015.
+/* EXEC-04: .btn-tiny defined globally here. Settings-specific styling is scoped
+ * to .api-key-actions .btn-tiny in settings.css (DEBT-015 CLOSED).
  * ============================================= */
 
 /* ── Base button ───────────────────────────────────────────── */

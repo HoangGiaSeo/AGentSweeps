@@ -24,7 +24,7 @@
 /* ── Window ────────────────────────────────────────────────── */
 .dmodal-window {
   background: var(--bg-card, #1a1d27);
-  border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+  border: 1px solid var(--border);
   border-radius: 1rem;
   width: min(960px, 100%);
   max-height: 88vh;
@@ -46,14 +46,14 @@
   align-items: center;
   gap: 1rem;
   padding: 1.1rem 1.5rem;
-  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
 .dmodal-drive-badge {
   font-size: 1.6rem;
   font-weight: 800;
-  color: var(--text-primary, #fff);
+  color: var(--text-bright);
   font-family: "Cascadia Code", "Consolas", monospace;
   background: var(--bg-input, rgba(255,255,255,0.06));
   border-radius: 0.5rem;
@@ -71,12 +71,12 @@
 .dmodal-drive-name {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text-primary, #fff);
+  color: var(--text-bright);
 }
 
 .dmodal-drive-sub {
   font-size: 0.78rem;
-  color: var(--text-muted, #888);
+  color: var(--text-dim);
   display: flex;
   gap: 1rem;
 }
@@ -119,8 +119,8 @@
 
 .dmodal-close-btn {
   background: transparent;
-  border: 1px solid var(--border-color, rgba(255,255,255,0.1));
-  color: var(--text-muted, #888);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
   border-radius: 0.4rem;
   width: 32px;
   height: 32px;
@@ -142,7 +142,7 @@
 /* ── Tabs ──────────────────────────────────────────────────── */
 .dmodal-tabs {
   display: flex;
-  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  border-bottom: 1px solid var(--border);
   padding: 0 1.5rem;
   flex-shrink: 0;
 }
@@ -151,7 +151,7 @@
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  color: var(--text-muted, #888);
+  color: var(--text-dim);
   font-size: 0.875rem;
   font-weight: 600;
   padding: 0.7rem 1.1rem;
@@ -164,7 +164,7 @@
 }
 
 .dmodal-tab-btn:hover {
-  color: var(--text-primary, #fff);
+  color: var(--text-bright);
 }
 
 .dmodal-tab-btn.active {
@@ -198,7 +198,7 @@
   justify-content: center;
   gap: 1rem;
   padding: 4rem 2rem;
-  color: var(--text-muted, #888);
+  color: var(--text-dim);
   font-size: 0.9rem;
 }
 
@@ -214,7 +214,7 @@
 }
 
 .dmodal-folder-row:hover {
-  background: var(--bg-hover, rgba(255,255,255,0.04));
+  background: var(--bg-card-hover);
 }
 
 .dmodal-folder-icon {
@@ -232,7 +232,7 @@
 .dmodal-folder-name {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary, #fff);
+  color: var(--text-bright);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -240,7 +240,7 @@
 
 .dmodal-folder-path {
   font-size: 0.7rem;
-  color: var(--text-muted, #888);
+  color: var(--text-dim);
   font-family: "Cascadia Code", "Consolas", monospace;
   white-space: nowrap;
   overflow: hidden;
@@ -270,7 +270,7 @@
 
 .dmodal-bar-pct {
   font-size: 0.72rem;
-  color: var(--text-muted, #888);
+  color: var(--text-dim);
   width: 3rem;
   text-align: right;
   flex-shrink: 0;
@@ -279,14 +279,14 @@
 .dmodal-size {
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--text-primary, #fff);
+  color: var(--text-bright);
   text-align: right;
   white-space: nowrap;
 }
 
 .dmodal-count {
   font-size: 0.72rem;
-  color: var(--text-muted, #888);
+  color: var(--text-dim);
   text-align: right;
   white-space: nowrap;
 }
@@ -299,10 +299,10 @@
   padding: 0.3rem 0.75rem 0.5rem;
   font-size: 0.72rem;
   font-weight: 700;
-  color: var(--text-muted, #888);
+  color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  border-bottom: 1px solid var(--border);
   margin-bottom: 0.25rem;
 }
 
@@ -315,14 +315,14 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  border-bottom: 1px solid var(--border);
   margin-bottom: 0.25rem;
 }
 
 .dmodal-cat-btn {
   background: transparent;
-  border: 1px solid var(--border-color, rgba(255,255,255,0.1));
-  color: var(--text-muted, #888);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
   border-radius: 1rem;
   padding: 0.25rem 0.75rem;
   font-size: 0.78rem;
@@ -336,8 +336,8 @@
 }
 
 .dmodal-cat-btn:hover {
-  background: var(--bg-hover, rgba(255,255,255,0.05));
-  color: var(--text-primary, #fff);
+  background: var(--bg-card-hover);
+  color: var(--text-bright);
 }
 
 .dmodal-cat-btn.active {
@@ -358,7 +358,7 @@
 }
 
 .dmodal-app-row:hover {
-  background: var(--bg-hover, rgba(255,255,255,0.04));
+  background: var(--bg-card-hover);
 }
 
 .dmodal-app-icon {
@@ -376,7 +376,7 @@
 .dmodal-app-name {
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--text-primary, #fff);
+  color: var(--text-bright);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -384,7 +384,7 @@
 
 .dmodal-app-exe {
   font-size: 0.7rem;
-  color: var(--text-muted, #888);
+  color: var(--text-dim);
   font-family: "Cascadia Code", "Consolas", monospace;
 }
 
@@ -394,7 +394,7 @@
   padding: 0.15rem 0.55rem;
   border-radius: 1rem;
   background: var(--bg-input, rgba(255,255,255,0.06));
-  color: var(--text-muted, #888);
+  color: var(--text-dim);
   white-space: nowrap;
 }
 
@@ -409,13 +409,13 @@
 .dmodal-last-used-primary {
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--text-primary, #fff);
+  color: var(--text-bright);
   white-space: nowrap;
 }
 
 .dmodal-last-used-days {
   font-size: 0.7rem;
-  color: var(--text-muted, #888);
+  color: var(--text-dim);
 }
 
 /* Freshness coloring */
@@ -431,7 +431,7 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 0.85rem 1.5rem;
-  border-top: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -463,8 +463,8 @@
 
 .dmodal-action-btn.secondary {
   background: var(--bg-input, rgba(255,255,255,0.07));
-  color: var(--text-primary, #fff);
-  border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+  color: var(--text-bright);
+  border: 1px solid var(--border);
 }
 
 /* ── Disk card hover (dashboard) ───────────────────────────── */
@@ -487,7 +487,7 @@
 .disk-card-hint {
   margin-top: 6px;
   font-size: 10px;
-  color: var(--text-muted, #888);
+  color: var(--text-dim);
   text-align: center;
   opacity: 0;
   transition: opacity 0.15s;

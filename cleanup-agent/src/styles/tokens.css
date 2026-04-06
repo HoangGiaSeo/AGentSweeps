@@ -2,11 +2,11 @@
  * All :root CSS custom properties live here.
  * EXEC-01B: extracted from base.css on 2026-04-07.
  *
- * DEBT-NOTE: Several files (chat.css, settings.css, deepscan.css, drivemodal.css)
- * reference tokens NOT defined here (--surface, --blue, --blue-hover, --card-bg,
- * --border-color, --text-primary, --text-muted). These were inherited from the
- * legacy App.css token set during an incomplete migration. Their addition is
- * deferred to a dedicated token-alignment wave (DEBT-014).
+ * EXEC-04 (DEBT-014 CLOSED): All previously undefined tokens resolved.
+ * --surface/--card-bg remapped to --bg-card; --surface-hover to --bg-card-hover;
+ * --border-color to --border; --text-primary to --text-bright;
+ * --text-secondary/--text-muted to --text-dim; --bg-hover to --bg-card-hover.
+ * --blue and --blue-hover added as new canonical color tokens.
  * ===================================================== */
 :root {
   --bg-dark: #0c0c1d;
@@ -30,6 +30,8 @@
   --red-bg: rgba(239, 83, 80, 0.12);
   --purple: #b388ff;
   --purple-bg: rgba(179, 136, 255, 0.12);
+  --blue: #3b82f6;
+  --blue-hover: #2563eb;
   --radius: 10px;
   --radius-sm: 6px;
   --transition: 0.2s ease;
