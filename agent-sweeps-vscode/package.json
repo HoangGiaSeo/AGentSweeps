@@ -2,7 +2,7 @@
   "name": "agent-sweeps",
   "displayName": "AGent Sweeps — Dev Disk Cleaner",
   "description": "AI-powered disk cleaner for developers: clears npm/pip/cargo/docker caches, temp files, and more. Supports Ollama, OpenAI, Gemini, Anthropic.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "HoangGiaSeo",
   "icon": "media/icon.png",
   "engines": {
@@ -67,9 +67,15 @@
     },
     "menus": {
       "commandPalette": [
-        { "command": "agentSweeps.open" },
-        { "command": "agentSweeps.quickScan" },
-        { "command": "agentSweeps.quickClean" }
+        {
+          "command": "agentSweeps.open"
+        },
+        {
+          "command": "agentSweeps.quickScan"
+        },
+        {
+          "command": "agentSweeps.quickClean"
+        }
       ]
     },
     "configuration": {
@@ -82,7 +88,12 @@
         },
         "agentSweeps.defaultAiProvider": {
           "type": "string",
-          "enum": ["ollama", "openai", "gemini", "anthropic"],
+          "enum": [
+            "ollama",
+            "openai",
+            "gemini",
+            "anthropic"
+          ],
           "default": "ollama",
           "description": "Default AI provider"
         }
