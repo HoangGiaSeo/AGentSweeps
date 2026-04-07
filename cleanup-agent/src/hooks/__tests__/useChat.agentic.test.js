@@ -114,12 +114,10 @@ describe("U04 — exclusion prevents false positive", () => {
     expect(detectTools("làm máy tính nhanh hơn")).toEqual([]);
   });
 
-  test("unrelated sentence with 'log' does not trigger cleanup_log when 'log' is not cleanup-log context", () => {
-    // NOTE: 'log' IS a V1 keyword by deliberate policy decision —
-    // this test documents correct behavior: 'log' alone DOES trigger cleanup_log
-    const result = detectTools("show application log");
-    expect(result).toContain("cleanup_log");
-    // This is acceptable V1 behavior: 'log' keyword is locked in allowlist
+  test("'show application log' no longer triggers cleanup_log — EXEC-06R: 'log' narrowed to 'cleanup log'", () => {
+    // D01 CLOSED: "log" keyword replaced by "cleanup log" in EXEC-06R.
+    // "show application log" no longer matches any cleanup_log keyword.
+    expect(detectTools("show application log")).toEqual([]);
   });
 });
 
@@ -462,5 +460,43 @@ describe("U15 — unrelated prompt: normal chat, no tool augmentation", () => {
 
   test("containsPathLikeContent: plain text returns false", () => {
     expect(containsPathLikeContent("Here is some normal text without paths")).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// U16 — EXEC-06R: Runtime exclusion + allowlist closure
+// ─────────────────────────────────────────────────────────────────────────────
+describe("U16 — runtime exclusion and allowlist narrowing (EXEC-06R)", () => {
+  // ── Narrowed allowlist: "cleanup log" replaces "log" ──────────────────────
+  test("'cleanup log' triggers cleanup_log (new narrowed keyword)", () => {
+    expect(detectTools("show cleanup log")).toContain("cleanup_log");
+  });
+
+  test("'view cleanup log history' triggers cleanup_log", () => {
+    expect(detectTools("view cleanup log history")).toContain("cleanup_log");
+  });
+
+  test("'log' alone no longer triggers cleanup_log — D01 CLOSED by keyword narrowing", () => {
+    expect(detectTools("log")).toEqual([]);
+  });
+
+  test("'view error log' no longer triggers cleanup_log", () => {
+    expect(detectTools("view error log")).toEqual([]);
+  });
+
+  // ── All other cleanup_log keywords still work after narrowing ─────────────
+  test("'đã xóa bao nhiêu' still triggers cleanup_log (confirm no false negative from 'xóa' exclusion removal)", () => {
+    expect(detectTools("đã xóa bao nhiêu GB rồi?")).toContain("cleanup_log");
+  });
+
+  // ── Runtime exclusion mechanism: excluded term wins over keyword match ─────
+  test("runtime exclusion: 'lần trước' keyword + 'nhanh hơn' excluded → no trigger", () => {
+    // "lần trước nhanh hơn không?" = "Was it faster last time?" — performance query, not cleanup history
+    // Keyword "lần trước" matches, but excluded "nhanh hơn" present → detectTools returns []
+    expect(detectTools("lần trước nhanh hơn không?")).toEqual([]);
+  });
+
+  test("runtime exclusion: 'lần trước' keyword without excluded term → triggers normally", () => {
+    expect(detectTools("lần trước dọn dẹp được bao nhiêu?")).toContain("cleanup_log");
   });
 });

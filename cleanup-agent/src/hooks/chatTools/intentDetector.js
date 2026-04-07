@@ -10,7 +10,8 @@ import { AGENT_TOOLS, FORCE_REFRESH_PHRASES } from "./toolRegistry";
 
 /**
  * Returns the list of tool IDs that should be executed for a given user message.
- * Matches against the locked V1 keyword allowlist only.
+ * Matches against the locked V1 keyword allowlist; then filters out tools whose
+ * excludedFromKeywords are present in the message (exclusion wins over keyword match).
  *
  * @param {string} message — raw user input
  * @returns {string[]} — ordered array of tool IDs (e.g. ["disk_overview", "cleanup_log"])
@@ -19,7 +20,13 @@ export function detectTools(message) {
   if (!message || typeof message !== "string") return [];
   const lower = message.toLowerCase();
   return AGENT_TOOLS
-    .filter((tool) => tool.keywords.some((kw) => lower.includes(kw.toLowerCase())))
+    .filter((tool) => {
+      const hasMatch = tool.keywords.some((kw) => lower.includes(kw.toLowerCase()));
+      if (!hasMatch) return false;
+      const excluded = tool.excludedFromKeywords ?? [];
+      const isExcluded = excluded.some((ex) => lower.includes(ex.toLowerCase()));
+      return !isExcluded;
+    })
     .map((tool) => tool.id);
 }
 

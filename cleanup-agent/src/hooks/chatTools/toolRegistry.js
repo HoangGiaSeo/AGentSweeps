@@ -4,7 +4,7 @@
  * Source of truth for:
  *   - Tool IDs and labels
  *   - Keyword trigger lists
- *   - Excluded broad terms (documentation — not processed at runtime)
+ *   - Excluded broad terms (runtime exclusion policy — processed by detectTools() in intentDetector.js)
  *
  * GOVERNANCE: Do NOT add keywords inline without opening a new wave.
  * Any modification to keywords[] requires a blueprint-approved wave.
@@ -24,8 +24,10 @@ export const AGENT_TOOLS = [
       "ổ c",
       "ổ d",
     ],
-    // Words explicitly NOT in keywords — documented to prevent future drift:
-    excludedFromKeywords: ["hệ thống", "máy", "tối ưu"],
+    // EXEC-06R: Prior terms ["hệ thống", "máy", "tối ưu"] cleared — all risk false negatives
+    // when combined with valid keywords (e.g. "dung lượng hệ thống", "ổ đĩa của máy").
+    // Disk exclusions deferred until safer compound terms are identified in a future wave.
+    excludedFromKeywords: [],
   },
   {
     id: "cleanup_log",
@@ -34,13 +36,14 @@ export const AGENT_TOOLS = [
     keywords: [
       "lịch sử dọn",
       "đã dọn",
-      "log",
+      "cleanup log",  // EXEC-06R: narrowed from "log" — eliminates "show application log" false positive (D01)
       "lần trước",
       "đã xóa bao nhiêu",
       "cleanup history",
     ],
-    // Words explicitly NOT in keywords:
-    excludedFromKeywords: ["xóa", "nhanh hơn"],
+    // EXEC-06R: "xóa" removed — it appears inside keyword "đã xóa bao nhiêu" causing false negatives.
+    // "nhanh hơn" retained — safe exclusion for performance-context queries (e.g. "lần trước nhanh hơn?").
+    excludedFromKeywords: ["nhanh hơn"],
   },
 ];
 
