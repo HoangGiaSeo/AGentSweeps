@@ -112,9 +112,19 @@ export default function SettingsTab({
                   href={provider.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.preventDefault();
-                    openUrl(provider.url);
+                    try {
+                      await openUrl(provider.url);
+                    } catch {
+                      // Rust backend not ready yet — copy URL to clipboard as fallback
+                      try {
+                        await navigator.clipboard.writeText(provider.url);
+                        alert(`Đã sao chép link vào clipboard:\n${provider.url}\n\nVui lòng dán (Ctrl+V) vào trình duyệt để mở.`);
+                      } catch {
+                        alert(`Vui lòng mở link thủ công trong trình duyệt:\n${provider.url}`);
+                      }
+                    }
                   }}
                 >
                   🔗 Lấy API Key tại {provider.urlLabel}
