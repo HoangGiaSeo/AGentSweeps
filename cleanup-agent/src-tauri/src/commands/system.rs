@@ -111,3 +111,25 @@ pub fn get_cleanup_log() -> Vec<LogEntry> {
 pub fn clear_cleanup_log() -> bool {
     logger::clear_log()
 }
+
+/// Open a URL in the system default browser.
+/// Only HTTPS URLs to the known API-provider domains are permitted.
+#[tauri::command]
+pub fn open_url(url: String) -> Result<(), String> {
+    const ALLOWED: &[&str] = &[
+        "https://platform.openai.com",
+        "https://aistudio.google.com",
+        "https://console.anthropic.com",
+    ];
+
+    if !ALLOWED.iter().any(|prefix| url.starts_with(prefix)) {
+        return Err(format!("URL not in allowed list: {}", url));
+    }
+
+    std::process::Command::new("cmd")
+        .args(["/c", "start", "", url.as_str()])
+        .spawn()
+        .map_err(|e| format!("Failed to open URL: {}", e))?;
+
+    Ok(())
+}

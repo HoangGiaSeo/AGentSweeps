@@ -1,4 +1,5 @@
 import { AI_PROVIDERS, MANUAL_ACTIONS } from "../constants";
+import { openUrl } from "../api";
 
 export default function SettingsTab({
   apiKeys,
@@ -113,8 +114,7 @@ export default function SettingsTab({
                   rel="noopener noreferrer"
                   onClick={(e) => {
                     e.preventDefault();
-                    window.__TAURI__?.shell?.open?.(provider.url) ||
-                      window.open(provider.url, "_blank");
+                    openUrl(provider.url);
                   }}
                 >
                   🔗 Lấy API Key tại {provider.urlLabel}

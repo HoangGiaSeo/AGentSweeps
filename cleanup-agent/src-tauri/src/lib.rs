@@ -13,6 +13,7 @@ pub fn run() {
             commands::system::check_ollama,
             commands::system::get_cleanup_log,
             commands::system::clear_cleanup_log,
+            commands::system::open_url,
             commands::settings::get_api_keys,
             commands::settings::save_api_key,
             commands::settings::remove_api_key,

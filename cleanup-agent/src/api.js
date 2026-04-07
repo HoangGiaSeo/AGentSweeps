@@ -54,3 +54,5 @@ export const deepCleanItems = (paths) => invoke("deep_clean_items", { paths });
 
 export const analyzeDrive = (drive, usedBytes) =>
   invoke("analyze_drive", { drive, usedBytes });
+
+export const openUrl = (url) => invoke("open_url", { url });
