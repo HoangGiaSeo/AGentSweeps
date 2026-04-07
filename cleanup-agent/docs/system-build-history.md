@@ -25,6 +25,7 @@
 | EXEC-05 | `ca4a9ff` | docs: Documentation Lock baseline (8 docs) | 2026-04-07 |
 | EXEC-06 | `54557e1` | feat: Agentic Chat V1 — tool-augmented chat (64 tests) | 2026-04-07 |
 | EXEC-06R | `57ab566` | fix: trigger-policy closure — runtime exclusion + D01 (71 tests) | 2026-04-07 |
+| EXEC-07 | `7a77572` | docs: Documentation Lock refresh — Agentic Chat V1 baseline | 2026-04-07 |
 
 ---
 
@@ -268,3 +269,28 @@
 - `npm run build` EXIT:0, CSS 49.15 kB / JS 260.11 kB (+0.04 kB)
 - `detectTools("show application log")` → `[]` — D01 false positive eliminated
 - Runtime exclusion: `detectTools("lần trước nhanh hơn?")` → `[]` — exclusion mechanism active
+
+---
+
+### EXEC-07 — Documentation Lock Refresh
+
+**Objective:** Re-lock the documentation baseline after Agentic Chat V1 Full Pass (EXEC-06 + 06R). Update all 7 existing docs, create `agentic-chat-runtime-map.md` as a new source-of-truth for the tool-augmented chat runtime. No code changes.  
+**Verdict:** FULL PASS — CTO verdict issued 2026-04-07  
+**Runtime Adoption:** N/A (documentation-only wave)  
+**Files Touched:**
+- `docs/system-build-history.md` — this file; wave table + wave detail extended
+- `docs/current-system-map.md` — chatTools subtree in layer diagram; 7 new source-of-truth rows; "Agentic Chat V1 — Tool Boundary" section
+- `docs/frontend-state-ownership-map.md` — `useChat` section fully rewritten with toolStatus atom, refs, IPC split, provider safety invariants, tool path owner map
+- `docs/design-system-ownership-map.md` — chat.css ToolBubble classes added
+- `docs/open-debt-register.md` — D01 closure recorded; D02–D06 NOTED section added; totals updated (30 tracked / 19 closed / 0 open / 11 noted)
+- `docs/gate-baselines.md` — Gate 8 (vitest 71/71) added; build thresholds updated; run history extended
+- `docs/documentation-lock-summary.md` — 8-gate state; chatTools zone ownership; FULL PASS verdict stamped
+- `docs/agentic-chat-runtime-map.md` — NEW: tool registry V1, trigger algorithm, freshness policy, redaction pipeline, context composition, per-tool data path, provider safety invariants, boundary declaration
+- `reports/cto/wave-07/documentation-lock-review.md` — NEW: 8 acceptance gates, CTO verdict section
+
+**Debt Delta:** None — docs-only wave. D02–D06 carry as Low NOTED.  
+**Key Gates:**
+- All 8 gates re-confirmed green (same runtime state as EXEC-06R HEAD `57ab566`)
+- 9/9 documentation deliverables complete
+- Zero code changes (confirmed by diff: only `docs/` and `reports/` modified)
+- CTO note: "0 open" wording clarified to mean "0 actionable open debts" in all docs going forward
