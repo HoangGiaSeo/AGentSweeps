@@ -1,7 +1,7 @@
 # Design System Ownership Map
 
 **Version:** v0.1.0  
-**Locked:** 2026-04-07 (EXEC-05 Documentation Lock)
+**Locked:** 2026-04-07 (EXEC-05 Documentation Lock → refreshed EXEC-07)
 
 ---
 
@@ -84,7 +84,7 @@ App import chain (order in App.jsx):
 | `cleanup.css` | Component | Cleanup tab panels, progress, results | Scoped to `.cleanup-*` |
 | `deepscan.css` | Component | Deep scan results, zone bars | Scoped to `.deep-scan-*`, `.zone-*` |
 | `drivemodal.css` | Component | DriveModal inner layout | Scoped to `.drive-modal-*` |
-| `chat.css` | Component | Chat message list, bubbles, input | Scoped to `.chat-*` |
+| `chat.css` | Component | Chat message list, bubbles, input, ToolBubble (EXEC-06) | Scoped to `.chat-*` — includes `.chat-tool-bubble`, `.chat-tool-header`, `.chat-tool-tag`, `.chat-tool-toggle`, `.chat-tool-items`, `.chat-tool-item-content`, `.chat-tool-status`, `@keyframes toolStatusPulse` |
 | `settings.css` | Component | Settings form, API key rows, schedule | Scoped to `.settings-*` |
 | `setup.css` | Component | SetupModal step content | Scoped to `.setup-*` |
 

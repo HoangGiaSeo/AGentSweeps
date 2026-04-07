@@ -1,7 +1,7 @@
 # Current System Map
 
 **Version:** v0.1.0  
-**Locked:** 2026-04-07 (EXEC-05 Documentation Lock)  
+**Locked:** 2026-04-07 (EXEC-05 Documentation Lock → refreshed EXEC-07)  
 **Stack:** Tauri 2 + React 18 + Vite 8 + Rust (stable/MSVC)
 
 > **Baseline correction — Tauri command count:** The original codebase scan recorded 28 registered commands. EXEC-05 audit verified the actual `generate_handler!` macro list: correct count is **27**. The scan figure was an enumeration error; no command was removed. All EXEC-05 docs use 27 as the locked baseline.
@@ -18,7 +18,10 @@
 │    ├── useToast (shared toast utility)                          │
 │    ├── useApiKeys      (API key domain)                         │
 │    ├── useDeepScan     (deep scan domain)                       │
-│    ├── useChat         (chat domain)                            │
+│    ├── useChat         (chat domain + tool orchestration)       │
+│    │     └── chatTools/ (toolRegistry, intentDetector,         │
+│    │                     freshnessPolicy, redactionPipeline,    │
+│    │                     contextComposer)                       │
 │    ├── useSchedule     (schedule domain)                        │
 │    └── useCleanup      (cleanup domain)                         │
 │                                                                 │
@@ -32,6 +35,7 @@
 │    tokens.css → base.css → modal.css → utilities.css →         │
 │    sidebar.css → toast.css → dashboard.css → cleanup.css →     │
 │    deepscan.css → drivemodal.css → chat.css → settings.css     │
+│    (chat.css includes ToolBubble styles: .chat-tool-*)          │
 │                                                                 │
 │  IPC Adapter: src/api.js (54 exports — flat invoke registry)   │
 └──────────────────────────────┬──────────────────────────────────┘
@@ -60,7 +64,13 @@
 | Frontend app shell | `src/App.jsx` | React | 260 LOC; no domain state |
 | Cleanup domain (state + handlers) | `src/hooks/useCleanup.js` | Hook | 206 LOC |
 | Deep scan domain | `src/hooks/useDeepScan.js` | Hook | 43 LOC |
-| Chat domain | `src/hooks/useChat.js` | Hook | ~80 LOC |
+| Chat domain + tool orchestration | `src/hooks/useChat.js` | Hook | 219 LOC (EXEC-06 rewrite) |
+| Tool registry (V1 locked allowlist) | `src/hooks/chatTools/toolRegistry.js` | Helper | `AGENT_TOOLS`, `FORCE_REFRESH_PHRASES`, `CACHE_TTL_MS`, `STALE_FALLBACK_TTL_MS` |
+| Intent detection (trigger policy) | `src/hooks/chatTools/intentDetector.js` | Helper | `detectTools()`, `isForceRefresh()` |
+| Freshness policy (disk cache) | `src/hooks/chatTools/freshnessPolicy.js` | Helper | `evaluateDiskCacheDecision()`, `evaluateFreshFetchFallback()` |
+| Redaction pipeline (cleanup log) | `src/hooks/chatTools/redactionPipeline.js` | Helper | `redactLogEntry()`, `formatRedactedLog()`, `containsPathLikeContent()` |
+| Context composer (AI injection) | `src/hooks/chatTools/contextComposer.js` | Helper | `composeDiskContext()`, `composeLogContext()`, `buildEnrichedMessage()` |
+| Tool evidence UI | `src/tabs/ChatTab.jsx` | React | `ToolBubble` component — expand/collapse only |
 | Schedule domain | `src/hooks/useSchedule.js` | Hook | ~65 LOC |
 | API key domain | `src/hooks/useApiKeys.js` | Hook | ~65 LOC |
 | Toast utility | `src/hooks/useToast.js` | Hook | 16 LOC; shared |
@@ -101,7 +111,13 @@
 | `src/hooks/useToast.js` | Toast state | 16 |
 | `src/hooks/useApiKeys.js` | API key domain | ~65 |
 | `src/hooks/useDeepScan.js` | Deep scan domain | ~45 |
-| `src/hooks/useChat.js` | Chat domain | ~85 |
+| `src/hooks/useChat.js` | Chat domain + tool orchestration | 219 |
+| `src/hooks/chatTools/toolRegistry.js` | V1 locked tool allowlist + constants | ~65 |
+| `src/hooks/chatTools/intentDetector.js` | Runtime trigger detection + exclusion | ~40 |
+| `src/hooks/chatTools/freshnessPolicy.js` | Disk cache freshness decisions | ~75 |
+| `src/hooks/chatTools/redactionPipeline.js` | Cleanup log redaction pipeline | ~90 |
+| `src/hooks/chatTools/contextComposer.js` | AI context string builder | ~60 |
+| `src/hooks/__tests__/useChat.agentic.test.js` | 71 unit tests (U01–U16) | ~480 |
 | `src/hooks/useSchedule.js` | Schedule domain | ~65 |
 | `src/hooks/useCleanup.js` | Cleanup domain | 206 |
 | `src/tabs/DashboardTab.jsx` | Dashboard UI | — |
@@ -161,3 +177,13 @@ This boundary is enforced by design and documented in `useCleanup.js` header com
 
 All API keys, schedule config, and first-run state are persisted to  
 `%USERPROFILE%\.dev-cleanup-agent-settings.json` by `settings.rs` internal functions `load_settings()` / `save_settings()`.
+
+### Agentic Chat V1 — Tool Boundary
+
+`useChat.js` (`diskCacheRef`, `fetchSingleToolContext`, `fetchAllToolContexts`) is the sole orchestration point for tool-augmented chat. No tool logic exists in `ChatTab.jsx` (UI only) or `App.jsx` (shell only).
+
+**Read-only IPC contract:** `useChat.js` imports only `getDiskOverview` and `getCleanupLog` from `api.js`. No destructive commands (`runCleanup`, `smartCleanup`, `deepCleanItems`, `zipBackup`) are accessible via the chat path.
+
+**Provider safety:** Cleanup log is mandatory-redacted for **all providers** via `formatRedactedLog()`. In addition, `containsPathLikeContent()` runs as a second safety gate before external-provider injection. Local/external share a **single pipeline** — no dual policy.
+
+**Keyword allowlist is locked V1.** Any keyword addition requires a new blueprint-approved wave. No inline heuristics exist outside `toolRegistry.js` + `intentDetector.js`.

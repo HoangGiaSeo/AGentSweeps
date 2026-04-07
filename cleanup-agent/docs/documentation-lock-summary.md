@@ -1,8 +1,8 @@
 # Documentation Lock Summary
 
 **Version:** v0.1.0  
-**Locked:** 2026-04-07 (EXEC-05 Documentation Lock)  
-**Status:** LOCKED ✅
+**Locked:** 2026-04-07 (EXEC-05 Documentation Lock → refreshed EXEC-07)
+**Status:** LOCKED ✅ (refreshed)
 
 ---
 
@@ -22,7 +22,8 @@ This document declares the system state as of the EXEC-05 Documentation Lock wav
 | Platform | Windows (MSVC toolchain) |
 | Repository | `https://github.com/HoangGiaSeo/AGentSweeps.git` |
 | Branch | `main` |
-| HEAD at lock | `bd7cbdd` |
+| HEAD at lock | `57ab566` (EXEC-07 refresh) |
+| HEAD at EXEC-05 lock | `bd7cbdd` |
 | Build date | 2026-04-07 |
 
 ---
@@ -32,42 +33,46 @@ This document declares the system state as of the EXEC-05 Documentation Lock wav
 The system is a desktop AI-assisted disk cleanup agent with:
 
 - A **React shell** (`App.jsx`, 260 LOC) that orchestrates domain hooks and routes tab renders
-- **6 domain hooks** that own all feature state and IPC calls
+- **6 domain hooks** that own all feature state and IPC calls  
+- **`useChat.js` augmented with tool orchestration (EXEC-06):** 5 pure-function helper modules in `src/hooks/chatTools/`; 2 read-only tools (`disk_overview`, `cleanup_log`); locked V1 keyword allowlist; mandatory redaction pipeline; freshness cache policy
 - **13 CSS files** with a single `tokens.css` source of truth for 26 custom properties
 - A **Tauri IPC bridge** exposing 27 Rust commands across 11 modules
 - **Rust backend** providing disk scanning, cleanup whitelisting, AI integration, settings persistence, scheduling, and deep scan
-- **48 unit tests** covering cleanup whitelisting and deep scan path safety
+- **48 Rust unit tests** covering cleanup whitelisting and deep scan path safety
+- **71 Vitest unit tests** covering Agentic Chat V1 trigger policy, freshness, redaction, and context composition
 
 ---
 
-## Documentation Files Created (EXEC-05)
+## Documentation Files (EXEC-07 Refresh)
 
-| File | Description |
-|------|-------------|
-| `docs/system-build-history.md` | Full wave history (pre-wave → EXEC-04); verdict, runtime, debt delta per wave |
-| `docs/current-system-map.md` | Layer-by-layer system map with source-of-truth file per domain |
-| `docs/frontend-state-ownership-map.md` | All state atoms, hooks, computed values, IPC calls, cross-domain callbacks |
-| `docs/backend-command-runtime-map.md` | All 27 Tauri commands with Rust file, api.js export, and caller hook |
-| `docs/design-system-ownership-map.md` | 26 canonical tokens, 13 CSS files, retired alias history, button system |
-| `docs/open-debt-register.md` | 24 tracked debts: 18 closed, 6 noted, 0 open; closure timeline |
-| `docs/gate-baselines.md` | 7 verified gates with regression thresholds and run history |
-| `docs/documentation-lock-summary.md` | This file — system state declaration and docs index |
+| File | Description | Status |
+|------|-------------|--------|
+| `docs/system-build-history.md` | Full wave history (pre-wave → EXEC-06R); verdict, runtime, debt delta per wave | **Updated EXEC-07** |
+| `docs/current-system-map.md` | Layer-by-layer system map with source-of-truth file per domain; Agentic Chat V1 section added | **Updated EXEC-07** |
+| `docs/frontend-state-ownership-map.md` | All state atoms, hooks, computed values, IPC calls, cross-domain callbacks; `useChat` fully expanded including tool path owners | **Updated EXEC-07** |
+| `docs/backend-command-runtime-map.md` | All 27 Tauri commands with Rust file, api.js export, and caller hook | Unchanged (no new commands) |
+| `docs/design-system-ownership-map.md` | 26 canonical tokens, 13 CSS files, retired alias history, button system; `chat.css` ToolBubble scope added | **Updated EXEC-07** |
+| `docs/open-debt-register.md` | 30 tracked debts: 19 closed, 0 open, 11 noted; D01 closed EXEC-06R; D02–D06 added EXEC-06 | **Updated EXEC-07** |
+| `docs/gate-baselines.md` | 8 verified gates (Gate 8 vitest added EXEC-06); regression thresholds updated; run history extended | **Updated EXEC-07** |
+| `docs/agentic-chat-runtime-map.md` | Tool-augmented chat runtime map: tool registry, trigger policy, data sources, redaction/freshness owner, UI owner, provider safety | **New EXEC-07** |
+| `docs/documentation-lock-summary.md` | This file — system state declaration and docs index | **Updated EXEC-07** |
 
 ---
 
-## Gate Status at Lock
+## Gate Status at Lock (EXEC-07 Refresh)
 
 | Gate | Status | Value |
 |------|--------|-------|
 | `cargo check` | ✅ PASS | EXIT:0 |
 | `cargo test --lib` | ✅ PASS | 48/48 |
-| `npm run build` | ✅ PASS | EXIT:0 |
+| `npm run build` | ✅ PASS | EXIT:0 (CSS 49.15 kB / JS 260.11 kB) |
 | Undefined CSS tokens | ✅ PASS | 0 matches |
 | App.jsx LOC | ✅ PASS | 260 LOC |
 | Tauri commands registered | ✅ PASS | 27 |
 | Actionable open debts | ✅ PASS | 0 |
+| Vitest unit tests | ✅ PASS | 71/71 |
 
-**All 7 gates PASS at lock point.**
+**All 8 gates PASS at EXEC-07 refresh point.**
 
 ---
 
@@ -78,7 +83,13 @@ The system is a desktop AI-assisted disk cleanup agent with:
 | App shell state | `src/App.jsx` |
 | Cleanup domain | `src/hooks/useCleanup.js` |
 | Deep scan domain | `src/hooks/useDeepScan.js` |
-| Chat domain | `src/hooks/useChat.js` |
+| Chat domain + tool orchestration | `src/hooks/useChat.js` |
+| Chat tool registry (V1 allowlist) | `src/hooks/chatTools/toolRegistry.js` |
+| Chat trigger detection + exclusion | `src/hooks/chatTools/intentDetector.js` |
+| Chat freshness policy | `src/hooks/chatTools/freshnessPolicy.js` |
+| Chat redaction pipeline | `src/hooks/chatTools/redactionPipeline.js` |
+| Chat context composer | `src/hooks/chatTools/contextComposer.js` |
+| Tool evidence UI | `src/tabs/ChatTab.jsx` (`ToolBubble`) |
 | Schedule domain | `src/hooks/useSchedule.js` |
 | API key domain | `src/hooks/useApiKeys.js` |
 | Toast utility | `src/hooks/useToast.js` |
@@ -93,11 +104,12 @@ The system is a desktop AI-assisted disk cleanup agent with:
 
 ## What This Lock Means
 
-1. **Source of truth per zone is identified.** No zone has ambiguous ownership.
-2. **All architecture decisions from EXEC-00 through EXEC-04 are documented.** A new developer can read `system-build-history.md` to understand why the current architecture exists.
-3. **All gate baselines are locked.** Any regression is detectable by re-running the 7 gates in `gate-baselines.md`.
-4. **Zero actionable debt.** The 6 NOTED items are acknowledged, scoped as non-blocking, and not on any wave roadmap.
-5. **Documentation matches codebase reality.** All claims in this docs set were verified against actual files during EXEC-05 audit.
+1. **Source of truth per zone is identified.** No zone has ambiguous ownership — including Agentic Chat V1 tool path (5 chatTools helper modules, each with a single concern).
+2. **All architecture decisions from EXEC-00 through EXEC-06R are documented.** A new developer can read `system-build-history.md` to understand why the current architecture exists.
+3. **All gate baselines are locked.** Any regression is detectable by re-running the 8 gates in `gate-baselines.md`.
+4. **Zero actionable debt.** The 11 NOTED items are acknowledged, scoped as non-blocking, and not on any wave roadmap.
+5. **Documentation matches codebase reality.** All claims in this docs set were verified against actual files during EXEC-07 audit.
+6. **Agentic Chat V1 is not an autonomous agent.** It is a tool-augmented chat that calls 2 read-only IPC functions and injects redacted context. No destructive commands are accessible from the chat path.
 
 ---
 
@@ -108,3 +120,5 @@ Future feature work can proceed with:
 - New Tauri command: add to `lib.rs` `generate_handler!`, add `api.js` export, add hook call
 - New CSS tokens: add to `tokens.css` `:root` first; then use in component CSS; update `design-system-ownership-map.md`
 - New debt: add to `reports/cto/wave-{N}/debt-register.md` AND `docs/open-debt-register.md`
+- **New chat tool (V2+):** requires new blueprint wave; do NOT add keywords to `toolRegistry.js` inline
+- **Agentic Chat expansion:** any new capability must open a blueprint-approved wave; keyword allowlist changes are governed by `toolRegistry.js` invariants

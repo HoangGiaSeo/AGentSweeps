@@ -1,7 +1,7 @@
 # Frontend State Ownership Map
 
 **Version:** v0.1.0  
-**Locked:** 2026-04-07 (EXEC-05 Documentation Lock)
+**Locked:** 2026-04-07 (EXEC-05 Documentation Lock → refreshed EXEC-07)
 
 ---
 
@@ -104,18 +104,26 @@ Auto-dismiss: each toast removed after timeout via `setTimeout`.
 
 ---
 
-### `useChat` — Chat Domain (80 LOC)
+### `useChat` — Chat Domain + Tool Orchestration (219 LOC post-EXEC-06)
 
 **Injected:** `ollamaStatus` (read-only from App.jsx), `apiKeys` (read-only from useApiKeys)
 
 | State Atom | Type | Default | Description |
 |------------|------|---------|-------------|
-| `chatMessages` | `array` | `[]` | Chat history (role + content) |
+| `chatMessages` | `array` | `[]` | Chat history — roles: `"user"`, `"assistant"`, `"tool"` (UI-only, filtered before AI send) |
 | `chatInput` | `string` | `''` | Current input value |
 | `chatLoading` | `boolean` | `false` | Message send in-progress |
-| `chatModel` | `string` | `'llama3'` | Selected Ollama model name |
+| `chatModel` | `string` | `'gemma3:4b'` | Selected Ollama model name |
 | `chatProvider` | `string` | `'ollama'` | Active provider: `'ollama'` or external key |
 | `chatExternalModel` | `string` | `''` | Model string for external provider |
+| `toolStatus` | `string` | `''` | In-flight tool status text; shown in loading bubble; `''` = standard typing dots |
+
+**Internal refs (not state — not React-rendered):**
+
+| Ref | Type | Purpose |
+|-----|------|---------|
+| `diskCacheRef` | `useRef({ data, capturedAt })` | Disk overview internal cache — independent from App.jsx shell `diskOverview` |
+| `providerRef` | `useRef(chatProvider)` | Closure-safe current provider capture for async tool fetch callbacks |
 
 **Computed:**
 
@@ -123,11 +131,57 @@ Auto-dismiss: each toast removed after timeout via `setTimeout`.
 |----------|-------------|-------------|
 | `chatReady` | `ollamaStatus`, `apiKeys` | `true` if Ollama running OR any enabled external key exists |
 
+**IPC calls — AI send:**
+
 | IPC Call | Tauri Command | When |
 |----------|--------------|------|
 | `chatAI` | `chat_ai` | Local Ollama message send |
 | `chatExternal` | `chat_external` | External provider message send |
 | `ensureOllamaRunning` | `ensure_ollama_running` | Before local chat attempt |
+
+**IPC calls — tool data (EXEC-06, read-only):**
+
+| IPC Call | Tauri Command | Tool | When |
+|----------|--------------|------|------|
+| `getDiskOverview` | `get_disk_overview` | disk_overview | Tool context fetch, cache-conditional |
+| `getCleanupLog` | `get_cleanup_log` | cleanup_log | Always fresh; mandatory redaction before use |
+
+**Tool orchestration (internal functions, not exported):**
+
+| Function | Description |
+|----------|-------------|
+| `fetchSingleToolContext(toolId, forceRefresh)` | Per-tool async fetch; applies freshness policy (disk) or redaction (log); returns context or null |
+| `fetchAllToolContexts(toolIds, message)` | Sequential orchestration; sets `toolStatus` per-tool; returns filtered non-null results |
+
+**Provider safety invariant:**  
+The line `if (providerRef.current !== "ollama" && containsPathLikeContent(redactedText)) return null` in `fetchSingleToolContext` blocks cleanup log injection to external providers if residual path content is detected post-redaction. This is defense-in-depth: `formatRedactedLog()` in `redactionPipeline.js` is the primary redaction layer (runs for all providers).
+
+**AI payload filter invariant:**  
+`newMessages.filter((m) => m.role !== "tool")` — `role:"tool"` messages are UI-only and never sent to any AI provider.
+
+**`chatMessages` role contract:**
+
+| Role | Source | AI Payload? | UI? |
+|------|--------|-------------|-----|
+| `"user"` | user input | ✅ Yes | ✅ Yes |
+| `"assistant"` | AI reply | ✅ Yes | ✅ Yes |
+| `"tool"` | tool result bubble | ❌ Filtered out | ✅ Yes (ToolBubble) |
+
+**Tool path owner map (all in `src/hooks/chatTools/`):**
+
+| Concern | Owner File | Owner Symbol |
+|---------|-----------|-------------|
+| Tool IDs + labels | `toolRegistry.js` | `AGENT_TOOLS` |
+| V1 keyword allowlist | `toolRegistry.js` | `AGENT_TOOLS[*].keywords` |
+| Runtime exclusion list | `toolRegistry.js` | `AGENT_TOOLS[*].excludedFromKeywords` |
+| Force-refresh phrases | `toolRegistry.js` | `FORCE_REFRESH_PHRASES` |
+| Cache TTL (60s) | `toolRegistry.js` | `CACHE_TTL_MS` |
+| Stale fallback TTL (10m) | `toolRegistry.js` | `STALE_FALLBACK_TTL_MS` |
+| Intent detection + exclusion eval | `intentDetector.js` | `detectTools()`, `isForceRefresh()` |
+| Disk freshness evaluation | `freshnessPolicy.js` | `evaluateDiskCacheDecision()`, `evaluateFreshFetchFallback()` |
+| Log redaction | `redactionPipeline.js` | `redactLogEntry()`, `formatRedactedLog()` |
+| Path safety gate | `redactionPipeline.js` | `containsPathLikeContent()` |
+| AI context injection | `contextComposer.js` | `buildEnrichedMessage()`, `composeDiskContext()`, `composeLogContext()` |
 
 ---
 

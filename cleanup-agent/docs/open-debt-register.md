@@ -1,8 +1,8 @@
 # Open Debt Register
 
 **Version:** v0.1.0  
-**Locked:** 2026-04-07 (EXEC-05 Documentation Lock)  
-**Source:** `reports/cto/wave-04/debt-register.md` (master debt ledger through EXEC-04)
+**Locked:** 2026-04-07 (EXEC-05 Documentation Lock → refreshed EXEC-07)
+**Source:** `reports/cto/wave-04/debt-register.md` + `reports/cto/wave-06r/debt-register.md`
 
 ---
 
@@ -10,12 +10,24 @@
 
 | Category | Count |
 |----------|-------|
-| ✅ CLOSED (actionable, resolved) | 18 |
+| ✅ CLOSED (actionable, resolved) | 19 |
 | 🔴 OPEN (actionable, unresolved) | **0** |
-| 📌 NOTED (non-blocking, no wave target) | 6 |
-| **Total tracked** | **24** |
+| 📌 NOTED (non-blocking, no wave target) | 11 |
+| **Total tracked** | **30** |
 
-> **All actionable debt is CLOSED.** Only 6 "NOTED" items remain — all non-blocking and not on any wave roadmap.
+> **All actionable debt is CLOSED.** 6 NOTED items carry from EXEC-05 baseline. 5 new NOTED items (D02–D06) added by EXEC-06/06R (all Low severity). D01 was opened and closed within EXEC-06/06R cycle.
+
+---
+
+## NOTED Items — EXEC-06/06R Wave (D02–D06) — Non-Blocking
+
+| ID | Title | Opened | Summary | Risk |
+|----|-------|--------|---------|------|
+| D02 | `diskCacheRef` independent from App.jsx startup snapshot | EXEC-06 | `useChat.js` manages its own disk cache. Could share `diskOverview` from App.jsx shell in future wave. | Low |
+| D03 | ToolBubble uses `<pre>` block — no structured pretty-print | EXEC-06 | Raw pre-formatted context text in expand/collapse. Table/list format deferred to V2. | Low |
+| D04 | Keyword allowlist Vietnamese-primary only | EXEC-06 | V1 is Vietnamese-primary; English keywords limited to basic nouns. Multilingual expansion is a scoped follow-up wave. | Low |
+| D05 | Stale-fallback not visually distinct beyond freshness tag | EXEC-06 | ToolBubble freshness tag shows "stale-fallback". Enhanced visual warning deferred. | Low |
+| D06 | Sequential tool fetch — no parallel execution | EXEC-06 | V1 has 2 tools; sequential is fast enough. `Promise.all` deferred. | Low |
 
 ---
 
@@ -36,6 +48,7 @@
 
 | ID | Title | Wave Opened | Wave Closed | Resolution Summary |
 |----|-------|------------|------------|-------------------|
+| D01 | `"log"` keyword triggered on non-cleanup context ("show application log") | EXEC-06 | EXEC-06R | Keyword narrowed from `"log"` to `"cleanup log"` in `toolRegistry.js`. `detectTools("show application log")` → `[]`. Runtime exclusion mechanism added to `detectTools()`. |
 | DEBT-001 | `App.css` god-file (600+ LOC) | EXEC-00 | EXEC-01C | Retired to 9-LOC tombstone; all CSS migrated to `styles/` |
 | DEBT-002 | No CSS token SoT | EXEC-00 | EXEC-01B | `src/styles/tokens.css` created; 24 initial `:root` tokens |
 | DEBT-003 | `App.jsx` god-component (~700 LOC, 37 useState) | EXEC-00 | EXEC-03 | 260 LOC, 9 useState, 5 handlers |
@@ -69,9 +82,11 @@
 | EXEC-02 | 2 (DEBT-006, DEBT-010) | 0 | −2 |
 | EXEC-03 | 4 (DEBT-003, DEBT-005, DEBT-009, DEBT-023) | 0 | −4 |
 | EXEC-04 | 2 (DEBT-014, DEBT-015) | 0 | −2 |
-| **EXEC-05** | 0 | 0 | **0** |
+| EXEC-05 | 0 | 0 | **0** |
+| EXEC-06 | 0 | 6 (D01–D06) | +6 |
+| EXEC-06R | 1 (D01) | 0 | −1 |
 
-**Cumulative actionable open after EXEC-05: 0**
+**Cumulative actionable open after EXEC-06R: 0**
 
 ---
 
